@@ -98,7 +98,7 @@
     .landing-screen::before {
       position: absolute;
       inset: -12%;
-      z-index: -1;
+      z-index: -3;
       content: "";
       background:
         repeating-linear-gradient(90deg, rgba(255, 255, 255, .032) 0 1px, transparent 1px 8px),
@@ -106,6 +106,60 @@
       opacity: .48;
       mix-blend-mode: multiply;
       pointer-events: none;
+    }
+    .landing-ambient {
+      position: absolute;
+      inset: -18%;
+      z-index: -2;
+      overflow: hidden;
+      pointer-events: none;
+      opacity: .78;
+    }
+    .landing-orb {
+      position: absolute;
+      width: clamp(260px, 34vw, 590px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      filter: blur(22px);
+      opacity: .38;
+      will-change: transform, opacity;
+      transform: translate3d(0, 0, 0);
+    }
+    .landing-orb-a {
+      top: 3%;
+      left: -8%;
+      background: radial-gradient(circle at 43% 42%, rgba(157, 213, 232, .58), rgba(157, 213, 232, 0) 70%);
+      animation: landing-orb-a 19s cubic-bezier(.45, .05, .55, .95) infinite alternate;
+    }
+    .landing-orb-b {
+      top: -12%;
+      right: -10%;
+      width: clamp(300px, 39vw, 680px);
+      background: radial-gradient(circle at 54% 48%, rgba(188, 220, 236, .56), rgba(188, 220, 236, 0) 69%);
+      animation: landing-orb-b 23s cubic-bezier(.45, .05, .55, .95) -6s infinite alternate;
+    }
+    .landing-orb-c {
+      right: 25%;
+      bottom: -33%;
+      width: clamp(320px, 43vw, 760px);
+      opacity: .27;
+      background: radial-gradient(circle at 50% 42%, rgba(142, 199, 222, .48), rgba(142, 199, 222, 0) 69%);
+      animation: landing-orb-c 27s cubic-bezier(.45, .05, .55, .95) -11s infinite alternate;
+    }
+    @keyframes landing-orb-a {
+      0% { transform: translate3d(-2%, -1%, 0) scale(.91) rotate(0deg); opacity: .28; }
+      52% { transform: translate3d(9%, 5%, 0) scale(1.04) rotate(12deg); opacity: .40; }
+      100% { transform: translate3d(3%, 11%, 0) scale(.98) rotate(24deg); opacity: .32; }
+    }
+    @keyframes landing-orb-b {
+      0% { transform: translate3d(2%, -2%, 0) scale(.96) rotate(0deg); opacity: .30; }
+      50% { transform: translate3d(-7%, 9%, 0) scale(1.05) rotate(-10deg); opacity: .42; }
+      100% { transform: translate3d(-1%, 4%, 0) scale(.92) rotate(-22deg); opacity: .34; }
+    }
+    @keyframes landing-orb-c {
+      0% { transform: translate3d(-5%, 2%, 0) scale(.94) rotate(0deg); opacity: .18; }
+      55% { transform: translate3d(7%, -8%, 0) scale(1.06) rotate(9deg); opacity: .30; }
+      100% { transform: translate3d(1%, -2%, 0) scale(.98) rotate(18deg); opacity: .22; }
     }
     .landing-screen::after {
       position: absolute;
@@ -130,20 +184,49 @@
       z-index: 1;
       display: grid;
       justify-items: center;
-      gap: clamp(28px, 5vh, 52px);
+      gap: clamp(20px, 3.8vh, 36px);
       padding: 24px;
       text-align: center;
     }
+    .landing-meta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: rgba(70, 111, 135, .68);
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .18em;
+      line-height: 1;
+    }
+    .landing-meta::before,
+    .landing-meta::after {
+      width: 28px;
+      height: 1px;
+      content: "";
+      background: linear-gradient(90deg, transparent, rgba(70, 111, 135, .34));
+    }
+    .landing-meta::after { transform: scaleX(-1); }
     .landing-wordmark {
       position: relative;
+      display: flex;
+      align-items: baseline;
+      gap: clamp(.045em, .7vw, .09em);
       font-size: clamp(4.2rem, 15vw, 12rem);
-      font-weight: 600;
-      letter-spacing: -.12em;
+      font-weight: 620;
+      letter-spacing: .01em;
       line-height: .8;
       color: rgba(70, 111, 135, .94);
       text-shadow: 0 16px 60px rgba(70, 111, 135, .18), 0 0 34px rgba(255, 255, 255, .66);
       user-select: none;
     }
+    .landing-wordmark span {
+      display: block;
+      transform: translateY(0);
+    }
+    .landing-wordmark span:nth-child(1) { transform: translateY(.02em); }
+    .landing-wordmark span:nth-child(2) { transform: translateY(-.015em); }
+    .landing-wordmark span:nth-child(3) { transform: translateY(.01em); }
+    .landing-wordmark span:nth-child(4) { transform: translateY(-.025em); }
     .landing-wordmark::after {
       position: absolute;
       inset: -28% -18%;
@@ -679,8 +762,96 @@
       font-size: .76rem;
       line-height: 1.6;
     }
+    .panel-note-row {
+      display: flex;
+      align-items: stretch;
+      gap: 8px;
+    }
+    .panel-note-row .panel-note {
+      flex: 1;
+      min-width: 0;
+      margin: 16px 0;
+    }
     .panel-note a { color: #4b7890; font-weight: 700; text-decoration: none; }
     .panel-note a:hover { text-decoration: underline; }
+    .structure-toggle {
+      flex: none;
+      align-self: stretch;
+      min-width: 58px;
+      margin: 16px 0;
+      padding: 8px 12px;
+      border: 1px solid rgba(255, 255, 255, .66);
+      border-radius: 13px;
+      color: #4b7180;
+      background: linear-gradient(135deg, rgba(255, 255, 255, .30), rgba(224, 244, 250, .14));
+      box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .82), 0 8px 18px rgba(48, 75, 88, .08);
+      backdrop-filter: blur(24px) saturate(1.18);
+      -webkit-backdrop-filter: blur(24px) saturate(1.18);
+      font-size: .76rem;
+      font-weight: 700;
+      transition: transform 140ms var(--ease), background 180ms ease, box-shadow 180ms ease;
+    }
+    .structure-toggle:hover { transform: scale(1.02); background: linear-gradient(135deg, rgba(255, 255, 255, .42), rgba(224, 244, 250, .20)); }
+    .structure-toggle[aria-expanded="true"] { color: var(--sky-deep); background: #e9f3f7; box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .88), 0 10px 22px rgba(48, 75, 88, .10); }
+    .structure-menu {
+      position: relative;
+      display: grid;
+      gap: 9px;
+      margin: -5px 0 16px;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, .68);
+      border-radius: 17px;
+      background: linear-gradient(145deg, rgba(255, 255, 255, .38), rgba(220, 243, 250, .18));
+      box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .78), 0 14px 28px rgba(48, 75, 88, .09);
+      backdrop-filter: blur(28px) saturate(1.16);
+      -webkit-backdrop-filter: blur(28px) saturate(1.16);
+      animation: structure-material-in 260ms var(--ease) both;
+    }
+    .structure-menu[hidden] { display: none; }
+    .structure-root {
+      display: grid;
+      justify-items: center;
+      gap: 2px;
+      padding: 8px 10px;
+      border: 1px solid #d7e7ec;
+      border-radius: 11px;
+      color: var(--sky-deep);
+      background: rgba(248, 253, 254, .82);
+      text-align: center;
+    }
+    .structure-root strong { font-size: .78rem; }
+    .structure-root small { color: var(--muted); font-size: .66rem; }
+    .structure-map {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding-top: 5px;
+    }
+    .structure-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      padding: 10px;
+      border: 1px solid #d7e7ec;
+      border-radius: 12px;
+      color: var(--ink);
+      background: rgba(249, 253, 254, .78);
+      text-align: left;
+      transition: transform 140ms var(--ease), border-color 180ms ease, background 180ms ease;
+    }
+    .structure-item:hover { transform: translateY(-1px) scale(1.012); border-color: #b7d3dd; background: #f3fafc; }
+    .structure-item:active { transform: scale(.975); }
+    .structure-item .structure-index { color: #7c9eaa; font-size: .62rem; font-weight: 700; }
+    .structure-item > span:nth-child(2) { display: grid; min-width: 0; gap: 2px; }
+    .structure-item strong { overflow: hidden; font-size: .76rem; text-overflow: ellipsis; white-space: nowrap; }
+    .structure-item small { color: var(--muted); font-size: .64rem; line-height: 1.35; }
+    .structure-item .structure-arrow { color: #7c9eaa; font-size: .9rem; }
+    @keyframes structure-material-in {
+      from { opacity: 0; transform: translateY(-4px) scale(.985); filter: blur(3px); }
+      to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    }
     .stage-tabs {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -700,7 +871,7 @@
     .stage-tab:hover { transform: scale(1.012); }
     .stage-tab[aria-selected="true"] { border-color: #b8d4de; color: var(--sky-deep); background: #e9f3f7; }
     .stage-tab strong, .stage-tab small { display: block; }
-    .stage-tab strong { font-size: .8rem; }
+    .stage-tab strong { font-size: 15.8px; }
     .stage-tab small { margin-top: 4px; font-size: .68rem; }
     .field { display: grid; gap: 6px; margin-bottom: 14px; }
     .field label { color: var(--muted); font-size: .72rem; }
@@ -977,6 +1148,8 @@
       .schedule th, .schedule td { padding: 4px; }
       .slot small { margin-top: 2px; }
       .panel-inner { padding: 21px 17px 34px; }
+      .structure-map { grid-template-columns: 1fr; }
+      .structure-toggle { min-width: 52px; padding-inline: 10px; }
       .stage-tabs, .audit-summary { grid-template-columns: 1fr; }
       .glass-control { min-height: 34px; padding: 6px 9px; }
       .schedule-size { gap: 3px; font-size: .60rem; }
@@ -1003,6 +1176,7 @@
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+      .landing-orb { animation: none !important; }
       .topbar, .panel-frame, .glass-control, .panel-close, .toast { backdrop-filter: blur(30px) saturate(1.12); -webkit-backdrop-filter: blur(30px) saturate(1.12); }
     }
     @supports not (backdrop-filter: blur(1px)) {
@@ -1015,8 +1189,14 @@
 <body class="landing-active">
   <section class="landing-screen" id="landingScreen" aria-label="入口">
     <canvas class="landing-canvas" id="landingCanvas" aria-hidden="true"></canvas>
+    <div class="landing-ambient" aria-hidden="true">
+      <span class="landing-orb landing-orb-a"></span>
+      <span class="landing-orb landing-orb-b"></span>
+      <span class="landing-orb landing-orb-c"></span>
+    </div>
     <div class="landing-center">
-      <div class="landing-wordmark" aria-label="CYUT">CYUT</div>
+      <div class="landing-meta" aria-hidden="true">115-1 · 課表規劃</div>
+      <div class="landing-wordmark" aria-label="CYUT"><span>C</span><span>Y</span><span>U</span><span>T</span></div>
       <button class="landing-enter" id="enterPlanner" type="button">進入課表 <span aria-hidden="true">↗</span></button>
     </div>
   </section>
@@ -1065,7 +1245,7 @@
           </div>
           <div class="board-foot">
             <div class="legend" aria-label="課程圖例">
-              <span>現在可選</span><span class="legend-labor">第二階段</span><span class="legend-conflict">衝堂</span>
+              <span>校定選修</span><span class="legend-labor">第二階段</span><span class="legend-conflict">衝堂</span>
             </div>
             <div class="board-foot-right">
               <div class="schedule-focus-tools" id="scheduleFocusTools" hidden>
@@ -1115,7 +1295,7 @@
     const allCourses = [];
     const byId = new Map();
     let activePanel = null;
-    let activeStage = "current";
+    let activeStage = "free";
     let searchQuery = "";
     let detailId = null;
     let toastTimer = 0;
@@ -1361,6 +1541,9 @@
       const required = selected.filter(function(course) { return course.stage === "required"; });
       const labor = selected.filter(function(course) { return course.stage === "labor"; });
       const department = selected.filter(function(course) { return course.stage === "department"; });
+      const core = selected.filter(function(course) { return courseTier(course) === "core"; });
+      const basic = selected.filter(function(course) { return courseTier(course) === "basic"; });
+      const free = selected.filter(function(course) { return courseTier(course) === "free"; });
       const errors = [];
       const warnings = [];
       if (conflictKeys.size) {
@@ -1399,7 +1582,10 @@
         currentCredits: current.reduce(function(total, course) { return total + course.credits; }, 0),
         requiredCredits: required.reduce(function(total, course) { return total + course.credits; }, 0),
         laborCredits: labor.reduce(function(total, course) { return total + course.credits; }, 0),
-        departmentCredits: department.reduce(function(total, course) { return total + course.credits; }, 0)
+        departmentCredits: department.reduce(function(total, course) { return total + course.credits; }, 0),
+        coreCredits: core.reduce(function(total, course) { return total + course.credits; }, 0),
+        basicCredits: basic.reduce(function(total, course) { return total + course.credits; }, 0),
+        freeCredits: free.reduce(function(total, course) { return total + course.credits; }, 0)
       };
     }
 
@@ -1524,18 +1710,38 @@
       return [course.code, course.name, course.teacher, course.day, course.language, course.note, course.category, course.department, course.className].join(" ").toLowerCase().indexOf(query) !== -1;
     }
 
+    function courseTier(course) {
+      if (!course) return "free";
+      if (course.stage === "department") return "department";
+      if (course.stage === "current" || course.stage === "labor") return "free";
+      if (course.category.indexOf("校訂必修｜基礎通識") === 0 || /校訂必修｜核心通識｜大[一二]英文$/.test(course.category)) return "basic";
+      if (course.category.indexOf("校訂必修｜核心通識｜") === 0) return "core";
+      return "basic";
+    }
+
+    function courseBelongsToStage(course, stage) {
+      return courseTier(course) === stage;
+    }
+
     function stageLabel(course) {
-      if (course.stage === "current") return "現在可選";
-      if (course.stage === "required") return "校訂必修";
-      if (course.stage === "department") return "設計學院";
-      return "第二階段";
+      const tier = courseTier(course);
+      if (tier === "core") return "核心通識";
+      if (tier === "basic") return "基礎通識";
+      if (tier === "department") return "設計學院";
+      if (course.stage === "labor") return "勞作教育 · 第二階段";
+      return "校定選修";
     }
 
     function coursePathLabel(course) {
       if (course.department) return course.department + (course.className ? " · " + course.className : "");
-      if (course.category) return course.category.replace(/^校訂必修｜/, "");
-      if (course.stage === "labor") return "勞作教育 · 20 門擇 1";
-      return "校訂選修";
+      if (courseTier(course) === "core") {
+        return "核心通識 · " + course.category.split("｜").pop();
+      }
+      if (courseTier(course) === "basic") {
+        return "基礎通識 · " + course.name;
+      }
+      if (course.stage === "labor") return "校定自由選修 · 勞作教育 · 第二階段";
+      return "校定自由選修 · 一階-在校生初選";
     }
 
     function courseCard(course) {
@@ -1550,24 +1756,44 @@
     }
 
     function courseGroupsForStage(courses) {
-      if (activeStage === "current") return [{ key: "current", title: "校訂選修", subtitle: "", courses: courses }];
-      if (activeStage === "labor") return [{ key: "labor", title: "勞作教育", subtitle: "第二階段・20 門擇 1", courses: courses }];
-      const order = activeStage === "required" ? [
-        "校訂必修｜基礎通識",
-        "校訂必修｜核心通識｜大一英文",
-        "校訂必修｜核心通識｜大二英文",
+      if (activeStage === "free") {
+        return [
+          { key: "current", title: "校定自由選修", subtitle: "一階-在校生初選", courses: courses.filter(function(course) { return course.stage === "current"; }) },
+          { key: "labor", title: "勞作教育", subtitle: "第二階段・20 門擇 1", courses: courses.filter(function(course) { return course.stage === "labor"; }) }
+        ].filter(function(group) { return group.courses.length; });
+      }
+      if (activeStage === "basic") {
+        const order = ["中文鑑賞與應用", "生活英文", "職場英文", "體育(體適能)", "資通訊與AI應用"];
+        const groups = [];
+        const seen = new Set();
+        order.forEach(function(name) {
+          const groupCourses = courses.filter(function(course) { return course.name === name; });
+          if (groupCourses.length) {
+            groups.push({ key: name, title: name, subtitle: "", courses: groupCourses });
+            seen.add(name);
+          }
+        });
+        courses.forEach(function(course) {
+          if (!seen.has(course.name)) {
+            groups.push({ key: course.name || "其他基礎通識", title: course.name || "其他基礎通識", subtitle: "", courses: courses.filter(function(item) { return item.name === course.name; }) });
+            seen.add(course.name);
+          }
+        });
+        return groups;
+      }
+      const order = activeStage === "core" ? [
         "校訂必修｜核心通識｜人文領域",
         "校訂必修｜核心通識｜社會領域",
         "校訂必修｜核心通識｜自然科學領域",
         "校訂必修｜核心通識｜綜合領域"
       ] : ["景觀及都市設計系", "建築系", "工業設計系", "視覺傳達設計系", "設計學院｜院共同"];
-      const field = activeStage === "required" ? "category" : "department";
+      const field = activeStage === "core" ? "category" : "department";
       const groups = [];
       const seen = new Set();
       order.forEach(function(key) {
         const groupCourses = courses.filter(function(course) { return course[field] === key; });
         if (groupCourses.length) {
-          groups.push({ key: key, title: activeStage === "required" ? key.replace(/^校訂必修｜/, "") : key, subtitle: "", courses: groupCourses });
+          groups.push({ key: key, title: activeStage === "core" ? key.replace(/^校訂必修｜核心通識｜/, "") : key, subtitle: "", courses: groupCourses });
           seen.add(key);
         }
       });
@@ -1643,7 +1869,7 @@
       const list = document.getElementById("courseList");
       if (!list) return;
       const view = captureCourseListView();
-      const courses = allCourses.filter(function(course) { return course.stage === activeStage && courseMatches(course); });
+      const courses = allCourses.filter(function(course) { return courseBelongsToStage(course, activeStage) && courseMatches(course); });
       document.getElementById("courseResultCount").textContent = courses.length + " 門";
       const groups = courseGroupsForStage(courses);
        list.innerHTML = courses.length ? groups.map(renderCourseGroup).join("") : '<div class="empty-state">無結果</div>';
@@ -1664,17 +1890,25 @@
     }
 
     function libraryMarkup() {
-      const currentCount = allCourses.filter(function(course) { return course.stage === "current"; }).length;
-      const requiredCount = allCourses.filter(function(course) { return course.stage === "required"; }).length;
+      const coreCount = allCourses.filter(function(course) { return courseBelongsToStage(course, "core"); }).length;
+      const basicCount = allCourses.filter(function(course) { return courseBelongsToStage(course, "basic"); }).length;
       const departmentCount = allCourses.filter(function(course) { return course.stage === "department"; }).length;
+      const currentCount = allCourses.filter(function(course) { return course.stage === "current"; }).length;
       const laborCount = allCourses.filter(function(course) { return course.stage === "labor"; }).length;
+      const freeCount = currentCount + laborCount;
       return '<div class="panel-head"><div><h2>課程</h2></div><button class="panel-close" type="button" data-action="close" aria-label="關閉">×</button></div>' +
-        '<div class="panel-note"><a href="https://cts.cyut.edu.tw/CTS0006" target="_blank" rel="noopener">核對 115-1 課堂一覽</a></div>' +
+        '<div class="panel-note-row"><div class="panel-note"><a href="https://cts.cyut.edu.tw/CTS0006" target="_blank" rel="noopener">核對 115-1 課堂一覽</a></div><button class="structure-toggle" type="button" data-action="toggle-structure" aria-expanded="false" aria-controls="structureMenu">結構</button></div>' +
+        '<div class="structure-menu" id="structureMenu" hidden aria-label="課程分類結構"><div class="structure-root"><strong>115-1 課程分類</strong><small>四大類 · 點選前往</small></div><div class="structure-map">' +
+          '<button class="structure-item" type="button" data-action="structure-stage" data-stage="core"><span class="structure-index">01</span><span><strong>核心通識</strong><small>至少 6 學分 · ' + coreCount + " 門</small></span><span class=\"structure-arrow\">↗</span></button>" +
+          '<button class="structure-item" type="button" data-action="structure-stage" data-stage="basic"><span class="structure-index">02</span><span><strong>基礎通識</strong><small>18 學分 · ' + basicCount + " 門</small></span><span class=\"structure-arrow\">↗</span></button>" +
+          '<button class="structure-item" type="button" data-action="structure-stage" data-stage="department"><span class="structure-index">03</span><span><strong>設計學院</strong><small>專業選修 · ' + departmentCount + " 門</small></span><span class=\"structure-arrow\">↗</span></button>" +
+          '<button class="structure-item" type="button" data-action="structure-stage" data-stage="free"><span class="structure-index">04</span><span><strong>校定選修</strong><small>校定自由選修 · ' + freeCount + " 門</small></span><span class=\"structure-arrow\">↗</span></button>" +
+        '</div></div>' +
         '<div class="stage-tabs" role="tablist">' +
-          '<button class="stage-tab" type="button" data-action="stage" data-stage="current" aria-selected="' + (activeStage === "current") + '"><strong>現在可選</strong><small>' + currentCount + " 門</small></button>" +
-          '<button class="stage-tab" type="button" data-action="stage" data-stage="required" aria-selected="' + (activeStage === "required") + '"><strong>校訂必修</strong><small>' + requiredCount + " 門</small></button>" +
-          '<button class="stage-tab" type="button" data-action="stage" data-stage="department" aria-selected="' + (activeStage === "department") + '"><strong>設計學院</strong><small>' + departmentCount + " 門</small></button>" +
-          '<button class="stage-tab" type="button" data-action="stage" data-stage="labor" aria-selected="' + (activeStage === "labor") + '"><strong>勞作教育</strong><small>第二階段・' + laborCount + " 門擇 1</small></button>" +
+          '<button class="stage-tab" type="button" data-action="stage" data-stage="core" aria-selected="' + (activeStage === "core") + '"><strong>核心通識</strong><small>至少 6 學分 · ' + coreCount + " 門</small></button>" +
+          '<button class="stage-tab" type="button" data-action="stage" data-stage="basic" aria-selected="' + (activeStage === "basic") + '"><strong>基礎通識</strong><small>18 學分 · ' + basicCount + " 門</small></button>" +
+          '<button class="stage-tab" type="button" data-action="stage" data-stage="department" aria-selected="' + (activeStage === "department") + '"><strong>設計學院</strong><small>專業選修 · ' + departmentCount + " 門</small></button>" +
+          '<button class="stage-tab" type="button" data-action="stage" data-stage="free" aria-selected="' + (activeStage === "free") + '"><strong>校定選修</strong><small>校定自由選修 · ' + freeCount + " 門（含第二階段）</small></button>" +
         "</div>" +
         '<div class="field"><label for="courseSearch">搜尋課程</label><input id="courseSearch" type="search" value="' + escapeHtml(searchQuery) + '" placeholder="課號／課名／教師"></div>' +
         '<div class="list-meta"><span>符合 <strong id="courseResultCount">—</strong></span></div>' +
@@ -1690,9 +1924,9 @@
       if (!result.errors.length && !result.warnings.length) messages.push('<div class="audit-message ok">無衝堂</div>');
       if (!result.selected.length) messages.push('<div class="audit-message ok">請先加入課程</div>');
       return '<div class="panel-head"><div><h2>檢查</h2></div><button class="panel-close" type="button" data-action="close" aria-label="關閉">×</button></div>' +
-        '<div class="audit-summary"><div class="audit-stat"><small>校訂選修</small><strong>' + result.currentCredits + " 學分</strong></div><div class=\"audit-stat\"><small>校訂必修</small><strong>" + result.requiredCredits + " 學分</strong></div><div class=\"audit-stat\"><small>設計學院</small><strong>" + result.departmentCredits + " 學分</strong></div><div class=\"audit-stat\"><small>勞作教育</small><strong>" + result.laborCredits + " 學分</strong></div><div class=\"audit-stat\"><small>已加入</small><strong>" + result.selected.length + " 門</strong></div><div class=\"audit-stat\"><small>衝堂節次</small><strong>" + result.conflictKeys.size + " 節</strong></div></div>" +
+        '<div class="audit-summary"><div class="audit-stat"><small>核心通識</small><strong>' + result.coreCredits + " 學分</strong></div><div class=\"audit-stat\"><small>基礎通識</small><strong>" + result.basicCredits + " 學分</strong></div><div class=\"audit-stat\"><small>設計學院</small><strong>" + result.departmentCredits + " 學分</strong></div><div class=\"audit-stat\"><small>校定選修</small><strong>" + result.freeCredits + " 學分</strong></div><div class=\"audit-stat\"><small>已加入</small><strong>" + result.selected.length + " 門</strong></div><div class=\"audit-stat\"><small>衝堂節次</small><strong>" + result.conflictKeys.size + " 節</strong></div></div>" +
         '<div class="audit-list">' + messages.join("") + "</div>" +
-        '<div class="audit-block"><h3>階段</h3><div class="button-row"><button class="minor-action primary" type="button" data-action="stage-and-library" data-stage="current">現在可選</button><button class="minor-action" type="button" data-action="stage-and-library" data-stage="required">校訂必修</button><button class="minor-action" type="button" data-action="stage-and-library" data-stage="department">設計學院</button><button class="minor-action" type="button" data-action="stage-and-library" data-stage="labor">勞作教育</button><button class="minor-action" type="button" data-action="export-plan">下載</button><button class="minor-action" type="button" data-action="clear-plan">清空</button></div></div>' +
+        '<div class="audit-block"><h3>分類</h3><div class="button-row"><button class="minor-action" type="button" data-action="stage-and-library" data-stage="core">核心通識</button><button class="minor-action" type="button" data-action="stage-and-library" data-stage="basic">基礎通識</button><button class="minor-action" type="button" data-action="stage-and-library" data-stage="department">設計學院</button><button class="minor-action primary" type="button" data-action="stage-and-library" data-stage="free">校定選修</button><button class="minor-action" type="button" data-action="export-plan">下載</button><button class="minor-action" type="button" data-action="clear-plan">清空</button></div></div>' +
         '<div class="audit-block"><h3>回報</h3><div class="field"><label for="reportText">差異</label><textarea id="reportText" placeholder="課號／差異"></textarea></div><button class="minor-action primary" type="button" data-action="save-report">儲存</button><div class="report-status" id="reportStatus"></div></div>';
     }
 
@@ -1925,6 +2159,26 @@
         return;
       }
       const action = button.dataset.action;
+      if (action === "toggle-structure") {
+        const menu = document.getElementById("structureMenu");
+        if (menu) {
+          const willOpen = menu.hidden;
+          menu.hidden = !willOpen;
+          button.setAttribute("aria-expanded", String(willOpen));
+          if (willOpen) window.setTimeout(function() { menu.scrollIntoView({behavior: "smooth", block: "nearest"}); }, 40);
+        }
+        return;
+      }
+      if (action === "structure-stage") {
+        activeStage = button.dataset.stage;
+        searchQuery = "";
+        setPanel("library");
+        window.setTimeout(function() {
+          const list = document.getElementById("courseList");
+          if (list) list.scrollIntoView({behavior: "smooth", block: "start"});
+        }, 120);
+        return;
+      }
       if (action === "close") setPanel(null);
       if (action === "clear-focus") {
         clearCourseDistribution();
@@ -2122,45 +2376,13 @@
     const reduceLandingMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let landingIsActive = true;
     let landingFrame = 0;
+    let landingPaintPending = false;
     let landingDpr = 1;
     let landingWidth = 0;
     let landingHeight = 0;
-    const landingTrail = [];
-    const landingAmbient = [];
-    const landingGlyphs = ["C", "Y", "U", "T", "c", "y", "u", "t"];
-
-    function seedLandingAmbient() {
-      if (!landingAmbient.length) {
-        for (let index = 0; index < 18; index += 1) {
-          landingAmbient.push({
-            x: Math.random() * landingWidth,
-            y: Math.random() * landingHeight,
-            vx: (Math.random() - .5) * .12,
-            vy: -.08 - Math.random() * .18,
-            size: 11 + Math.random() * 18,
-            alpha: .08 + Math.random() * .13,
-            life: .5 + Math.random() * .5,
-            phase: Math.random() * Math.PI * 2,
-            glyph: landingGlyphs[Math.floor(Math.random() * landingGlyphs.length)]
-          });
-        }
-      }
-    }
-
-    function spawnLandingAmbient() {
-      if (!landingIsActive || reduceLandingMotion || landingAmbient.length >= 28) return;
-      landingAmbient.push({
-        x: Math.random() * landingWidth,
-        y: landingHeight + 28,
-        vx: (Math.random() - .5) * .16,
-        vy: -.12 - Math.random() * .22,
-        size: 10 + Math.random() * 16,
-        alpha: .07 + Math.random() * .12,
-        life: .3 + Math.random() * .7,
-        phase: Math.random() * Math.PI * 2,
-        glyph: landingGlyphs[Math.floor(Math.random() * landingGlyphs.length)]
-      });
-    }
+    const landingMatrix = [];
+    const landingPointer = {x: 0, y: 0, active: false};
+    const landingMatrixLetters = ["C", "Y", "U", "T"];
 
     function sizeLandingCanvas() {
       if (!landingCanvas) return;
@@ -2173,95 +2395,94 @@
       landingCanvas.style.height = landingHeight + "px";
       const context = landingCanvas.getContext("2d");
       if (context) context.setTransform(landingDpr, 0, 0, landingDpr, 0, 0);
-      seedLandingAmbient();
+      buildLandingMatrix();
+      paintLandingMatrix();
     }
 
-    function addLandingGlyphs(x, y, intensity) {
-      const count = intensity ? 5 : 2 + Math.floor(Math.random() * 2);
-      for (let index = 0; index < count; index += 1) {
-        const angle = Math.random() * Math.PI * 2;
-        const distance = intensity ? Math.random() * 30 : Math.random() * 16;
-        landingTrail.push({
-          x: x + Math.cos(angle) * distance,
-          y: y + Math.sin(angle) * distance,
-          vx: (Math.random() - .5) * (intensity ? .45 : .28),
-          vy: -.08 - Math.random() * (intensity ? .34 : .18),
-          size: 10 + Math.random() * (intensity ? 13 : 9),
-          alpha: intensity ? .76 : .56,
-          life: 1,
-          rotation: (Math.random() - .5) * .16,
-          spin: (Math.random() - .5) * .012,
-          glyph: landingGlyphs[Math.floor(Math.random() * landingGlyphs.length)]
-        });
+    function buildLandingMatrix() {
+      landingMatrix.length = 0;
+      const columns = Math.max(12, Math.min(34, Math.floor(landingWidth / 42)));
+      const rows = Math.max(10, Math.min(22, Math.floor(landingHeight / 42)));
+      const spacingX = landingWidth / (columns + 1);
+      const spacingY = landingHeight / (rows + 1);
+      for (let row = 0; row < rows; row += 1) {
+        for (let column = 0; column < columns; column += 1) {
+          landingMatrix.push({
+            x: (column + 1) * spacingX,
+            y: (row + 1) * spacingY,
+            index: (column + row * 3) % landingMatrixLetters.length,
+            mark: (column * 5 + row * 7) % 6 === 0 ? "*" : "-"
+          });
+        }
       }
-      if (landingTrail.length > 150) landingTrail.splice(0, landingTrail.length - 150);
     }
 
-    function paintLandingTrail() {
+    function paintLandingMatrix() {
+      landingPaintPending = false;
       if (!landingIsActive || !landingCanvas) return;
       const context = landingCanvas.getContext("2d");
       if (!context) return;
       context.clearRect(0, 0, landingWidth, landingHeight);
       context.textAlign = "center";
       context.textBaseline = "middle";
-      if (Math.random() < .035) spawnLandingAmbient();
-      landingAmbient.forEach(function(point) {
-        point.x += point.vx;
-        point.y += point.vy;
-        point.phase += .012;
-        if (point.y < -38 || point.x < -42 || point.x > landingWidth + 42) {
-          point.x = Math.random() * landingWidth;
-          point.y = landingHeight + 28;
-          point.phase = Math.random() * Math.PI * 2;
+      context.font = "600 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+      const nearRadius = Math.max(88, Math.min(172, Math.min(landingWidth, landingHeight) * .19));
+      const revealRadius = nearRadius * 2.35;
+      landingMatrix.forEach(function(point) {
+        const distance = landingPointer.active
+          ? Math.hypot(point.x - landingPointer.x, point.y - landingPointer.y)
+          : Infinity;
+        let glyph = point.mark;
+        let alpha = .025;
+        if (distance < nearRadius) {
+          const reveal = 1 - distance / nearRadius;
+          glyph = landingMatrixLetters[point.index];
+          alpha = .14 + reveal * .34;
+        } else if (distance < revealRadius) {
+          const reveal = 1 - (distance - nearRadius) / (revealRadius - nearRadius);
+          glyph = point.mark;
+          alpha = .035 + reveal * .105;
         }
-        context.save();
-        context.translate(point.x, point.y);
-        context.rotate(Math.sin(point.phase) * .08);
-        context.globalAlpha = point.alpha * (.72 + Math.sin(point.phase) * .16);
-        context.font = "600 " + point.size + "px system-ui, sans-serif";
-        context.fillStyle = "#6c98aa";
-        context.shadowColor = "rgba(255, 255, 255, .64)";
-        context.shadowBlur = 9;
-        context.fillText(point.glyph, 0, 0);
-        context.restore();
-      });
-      for (let index = landingTrail.length - 1; index >= 0; index -= 1) {
-        const point = landingTrail[index];
-        point.x += point.vx;
-        point.y += point.vy;
-        point.rotation += point.spin;
-        point.life *= .945;
-        if (point.life < .035) {
-          landingTrail.splice(index, 1);
-          continue;
-        }
-        context.save();
-        context.translate(point.x, point.y);
-        context.rotate(point.rotation);
-        context.globalAlpha = point.alpha * point.life;
-        context.font = "600 " + point.size + "px system-ui, sans-serif";
+        context.globalAlpha = alpha;
         context.fillStyle = "#5f8da2";
-        context.shadowColor = "rgba(255, 255, 255, .72)";
-        context.shadowBlur = 10;
-        context.fillText(point.glyph, 0, 0);
-        context.restore();
+        context.fillText(glyph, point.x, point.y);
+      });
+      context.globalAlpha = 1;
+    }
+
+    function requestLandingMatrixPaint() {
+      if (!landingIsActive || landingPaintPending) return;
+      landingPaintPending = true;
+      if (reduceLandingMotion) {
+        paintLandingMatrix();
+      } else {
+        landingFrame = window.requestAnimationFrame(paintLandingMatrix);
       }
-      landingFrame = window.requestAnimationFrame(paintLandingTrail);
     }
 
     function updateLandingPointer(event) {
       if (!landingIsActive || reduceLandingMotion || event.pointerType === "touch") return;
       landingScreen.style.setProperty("--landing-x", event.clientX + "px");
       landingScreen.style.setProperty("--landing-y", event.clientY + "px");
-      addLandingGlyphs(event.clientX, event.clientY, event.buttons > 0);
+      landingPointer.x = event.clientX;
+      landingPointer.y = event.clientY;
+      landingPointer.active = true;
+      requestLandingMatrixPaint();
+    }
+
+    function resetLandingPointer() {
+      if (!landingIsActive) return;
+      landingPointer.active = false;
+      landingScreen.style.setProperty("--landing-x", "50%");
+      landingScreen.style.setProperty("--landing-y", "50%");
+      requestLandingMatrixPaint();
     }
 
     function leaveLanding() {
       if (!landingIsActive) return;
       landingIsActive = false;
       if (landingFrame) window.cancelAnimationFrame(landingFrame);
-      landingTrail.length = 0;
-      landingAmbient.length = 0;
+      landingPaintPending = false;
       const context = landingCanvas && landingCanvas.getContext("2d");
       if (context) context.clearRect(0, 0, landingWidth, landingHeight);
       enterPlanner.disabled = true;
@@ -2278,7 +2499,7 @@
       window.addEventListener("resize", sizeLandingCanvas, {passive: true});
       if (!reduceLandingMotion) {
         landingScreen.addEventListener("pointermove", updateLandingPointer, {passive: true});
-        landingFrame = window.requestAnimationFrame(paintLandingTrail);
+        landingScreen.addEventListener("pointerleave", resetLandingPointer, {passive: true});
       }
       enterPlanner.addEventListener("click", leaveLanding);
     }
