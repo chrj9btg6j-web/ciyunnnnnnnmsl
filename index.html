@@ -940,11 +940,18 @@
       .panel-inner { max-width: 640px; height: 100%; min-height: 0; margin: 0 auto; touch-action: pan-y; }
     }
     @media (max-width: 620px) {
-      .topbar { min-height: 0; margin: 10px 12px 0; padding: 20px 18px; border-radius: 24px; }
+      .topbar { min-height: 0; margin: 10px 12px 0; padding: 12px 14px; border-radius: 20px; gap: 8px; }
+      .brand h1 { font-size: 1rem; }
+      .brand p { font-size: .70rem; }
+      .top-actions { gap: 5px; }
+      .data-status { font-size: .68rem; }
       .main-content { padding: 18px 12px 32px; }
-      .board-head { align-items: flex-start; flex-direction: column; padding: 22px 18px 17px; }
-      .board-tools { width: 100%; align-items: flex-start; justify-content: flex-start; flex-direction: column; gap: 10px; }
-      .board-metrics { justify-content: flex-start; }
+      .board-head { align-items: flex-start; flex-direction: column; gap: 10px; padding: 16px 14px 12px; }
+      .board-tools { width: 100%; align-items: center; justify-content: flex-start; flex-direction: row; gap: 6px; }
+      .board-metrics { justify-content: flex-start; gap: 5px; }
+      .metric { min-width: 50px; padding: 6px; }
+      .metric small { font-size: .58rem; }
+      .metric strong { font-size: .88rem; }
       .board-foot { align-items: flex-start; flex-direction: column; padding: 14px 17px; }
       .board-foot-right { width: 100%; align-items: stretch; justify-content: flex-start; flex-wrap: wrap; }
       .schedule-focus-tools { width: 100%; min-width: 0; }
@@ -952,14 +959,18 @@
       .schedule-focus-actions { justify-content: flex-start; }
       .schedule-focus-options { max-width: 100%; width: 100%; }
       .calendar-scroll { margin-right: 1px; padding-bottom: 4px; }
+      .schedule th, .schedule td { padding: 4px; }
+      .slot small { margin-top: 2px; }
       .panel-inner { padding: 21px 17px 34px; }
       .stage-tabs, .audit-summary { grid-template-columns: 1fr; }
-      .glass-control { min-height: 36px; padding: 7px 10px; }
-      .schedule-board.schedule-scale-1 { --schedule-row-height: 46px; --schedule-head-height: 32px; --schedule-period-width: 34px; --schedule-min-width: 560px; --schedule-font-size: .56rem; --schedule-head-font-size: .60rem; --slot-min-height: 34px; --slot-padding: 5px 5px 4px; --slot-title-size: .60rem; --slot-meta-size: .51rem; }
-      .schedule-board.schedule-scale-2 { --schedule-row-height: 58px; --schedule-head-height: 37px; --schedule-period-width: 41px; --schedule-min-width: 640px; --schedule-font-size: .64rem; --schedule-head-font-size: .66rem; --slot-min-height: 44px; --slot-padding: 6px 6px 5px; --slot-title-size: .67rem; --slot-meta-size: .57rem; }
-      .schedule-board.schedule-scale-3 { --schedule-row-height: 72px; --schedule-head-height: 43px; --schedule-period-width: 49px; --schedule-min-width: 720px; --schedule-font-size: .72rem; --schedule-head-font-size: .74rem; --slot-min-height: 54px; --slot-padding: 7px 7px 6px; --slot-title-size: .74rem; --slot-meta-size: .62rem; }
-      .schedule-board.schedule-scale-4 { --schedule-row-height: 90px; --schedule-head-height: 50px; --schedule-period-width: 58px; --schedule-min-width: 830px; --schedule-font-size: .80rem; --schedule-head-font-size: .82rem; --slot-min-height: 70px; --slot-padding: 8px 8px 7px; --slot-title-size: .82rem; --slot-meta-size: .68rem; }
-      .schedule-board.schedule-scale-5 { --schedule-row-height: 110px; --schedule-head-height: 58px; --schedule-period-width: 68px; --schedule-min-width: 960px; --schedule-font-size: .88rem; --schedule-head-font-size: .90rem; --slot-min-height: 86px; --slot-padding: 9px 9px 8px; --slot-title-size: .90rem; --slot-meta-size: .74rem; }
+      .glass-control { min-height: 34px; padding: 6px 9px; }
+      .schedule-size { gap: 3px; font-size: .60rem; }
+      .schedule-size button { width: 22px; height: 22px; border-radius: 7px; }
+      .schedule-board.schedule-scale-1 { --schedule-row-height: 38px; --schedule-head-height: 28px; --schedule-period-width: 28px; --schedule-min-width: 430px; --schedule-font-size: .50rem; --schedule-head-font-size: .54rem; --slot-min-height: 27px; --slot-padding: 3px 3px 2px; --slot-title-size: .54rem; --slot-meta-size: .46rem; }
+      .schedule-board.schedule-scale-2 { --schedule-row-height: 46px; --schedule-head-height: 32px; --schedule-period-width: 32px; --schedule-min-width: 500px; --schedule-font-size: .56rem; --schedule-head-font-size: .60rem; --slot-min-height: 34px; --slot-padding: 4px 4px 3px; --slot-title-size: .60rem; --slot-meta-size: .50rem; }
+      .schedule-board.schedule-scale-3 { --schedule-row-height: 56px; --schedule-head-height: 36px; --schedule-period-width: 36px; --schedule-min-width: 580px; --schedule-font-size: .62rem; --schedule-head-font-size: .64rem; --slot-min-height: 42px; --slot-padding: 5px 5px 4px; --slot-title-size: .66rem; --slot-meta-size: .54rem; }
+      .schedule-board.schedule-scale-4 { --schedule-row-height: 70px; --schedule-head-height: 43px; --schedule-period-width: 44px; --schedule-min-width: 700px; --schedule-font-size: .70rem; --schedule-head-font-size: .72rem; --slot-min-height: 54px; --slot-padding: 6px 6px 5px; --slot-title-size: .74rem; --slot-meta-size: .62rem; }
+      .schedule-board.schedule-scale-5 { --schedule-row-height: 86px; --schedule-head-height: 50px; --schedule-period-width: 52px; --schedule-min-width: 840px; --schedule-font-size: .78rem; --schedule-head-font-size: .80rem; --slot-min-height: 68px; --slot-padding: 7px 7px 6px; --slot-title-size: .82rem; --slot-meta-size: .68rem; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
