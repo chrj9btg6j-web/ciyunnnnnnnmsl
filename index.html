@@ -64,7 +64,8 @@
       background: linear-gradient(180deg, rgba(247, 250, 252, .04), rgba(247, 250, 252, .16) 54%, rgba(247, 250, 252, .34));
       pointer-events: none;
     }
-    body.landing-active { overflow: hidden; }
+    body.landing-active,
+    body.panel-open { overflow: hidden; }
     .landing-screen {
       --landing-x: 50%;
       --landing-y: 50%;
@@ -617,8 +618,12 @@
     .panel-inner {
       position: relative;
       z-index: 1;
+      min-height: 0;
       height: 100%;
       overflow-y: auto;
+      overscroll-behavior-y: contain;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
       padding: 28px 24px 44px;
     }
     .panel-head {
@@ -925,11 +930,14 @@
         position: fixed;
         inset: 12px;
         z-index: 25;
-        height: auto;
+        height: calc(100vh - 24px);
+        height: calc(100dvh - 24px);
+        max-height: calc(100dvh - 24px);
         margin: 0;
         border-left: 1px solid rgba(255, 255, 255, .66);
+        overscroll-behavior: contain;
       }
-      .panel-inner { max-width: 640px; height: 100%; margin: 0 auto; }
+      .panel-inner { max-width: 640px; height: 100%; min-height: 0; margin: 0 auto; touch-action: pan-y; }
     }
     @media (max-width: 620px) {
       .topbar { min-height: 0; margin: 10px 12px 0; padding: 20px 18px; border-radius: 24px; }
