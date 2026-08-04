@@ -1574,9 +1574,44 @@
       return '<details class="course-group" ' + (openGroup ? "open" : "") + '><summary><span><strong>' + escapeHtml(group.title) + '</strong>' + subtitle + '</span><em>' + group.courses.length + ' 門 · ' + credits + ' 學分</em></summary>' + body + "</details>";
     }
 
+    function captureCourseListView() {
+      const list = document.getElementById("courseList");
+      if (!list) return null;
+      return {
+        scrollTop: panelContent ? panelContent.scrollTop : 0,
+        openGroups: Array.from(list.querySelectorAll("details.course-group")).map(function(details, index) { return details.open ? index : -1; }).filter(function(index) { return index >= 0; }),
+        openSubgroups: Array.from(list.querySelectorAll("details.course-subgroup")).map(function(details, index) { return details.open ? index : -1; }).filter(function(index) { return index >= 0; })
+      };
+    }
+
+    function restoreCourseListView(view) {
+      if (!view) return;
+      const list = document.getElementById("courseList");
+      if (!list) return;
+      const openGroups = new Set(view.openGroups || []);
+      const openSubgroups = new Set(view.openSubgroups || []);
+      list.querySelectorAll("details.course-group").forEach(function(details, index) {
+        details.open = openGroups.has(index) || details.open;
+      });
+      list.querySelectorAll("details.course-subgroup").forEach(function(details, index) {
+        details.open = openSubgroups.has(index) || details.open;
+      });
+      if (panelContent) {
+        const restoreScroll = function() {
+          if (activePanel === "library") panelContent.scrollTo({top: view.scrollTop || 0, behavior: "auto"});
+        };
+        restoreScroll();
+        window.requestAnimationFrame(function() {
+          restoreScroll();
+        });
+        window.setTimeout(restoreScroll, 0);
+      }
+    }
+
     function renderCourseList() {
       const list = document.getElementById("courseList");
       if (!list) return;
+      const view = captureCourseListView();
       const courses = allCourses.filter(function(course) { return course.stage === activeStage && courseMatches(course); });
       document.getElementById("courseResultCount").textContent = courses.length + " 門";
       const groups = courseGroupsForStage(courses);
@@ -1594,6 +1629,7 @@
           return '<div class="selected-mini-row"><span><strong>' + escapeHtml(course.code) + "</strong> " + escapeHtml(course.name) + "</span><button class=\"minor-action\" type=\"button\" data-action=\"toggle\" data-id=\"" + course.id + '">移除</button></div>';
          }).join("") : '<div class="empty-state">無課程</div>';
       }
+      restoreCourseListView(view);
     }
 
     function libraryMarkup() {
@@ -1863,7 +1899,10 @@
         clearCourseDistribution();
         if (activePanel === "focus") setPanel(null);
       }
-      if (action === "toggle") toggleCourse(button.dataset.id);
+      if (action === "toggle") {
+        if (event.detail > 0) button.blur();
+        toggleCourse(button.dataset.id);
+      }
       if (action === "detail") setPanel("detail", button.dataset.id);
       if (action === "stage") {
         activeStage = button.dataset.stage;
