@@ -526,6 +526,7 @@
     }
     .focus-variant-option:hover { transform: translateY(-1px) scale(1.02); background: #fff; }
     .focus-variant-option.is-current { color: #315f72; border-color: rgba(63, 108, 130, .42); background: #e8f2f5; box-shadow: inset 0 0 0 1px rgba(63, 108, 130, .12); }
+    .focus-variant-option.is-conflict { color: #a65e52; border-color: rgba(201, 123, 109, .38); background: rgba(236, 184, 176, .28); }
     .focus-variant-option.is-selected { box-shadow: inset 0 0 0 1px rgba(63, 108, 130, .24); }
     .focus-variant-option strong { font-size: .72rem; }
     .focus-variant-option span { font-size: .64rem; white-space: nowrap; }
@@ -1388,10 +1389,11 @@
     function renderFocusOption(course, focusCourse) {
       const isCurrent = course.id === focusCourse.id;
       const isSelected = selectedIds.has(course.id);
+      const conflicts = conflictCoursesFor(course);
       const periodText = String(course.period || "待核對").split(" ")[0];
-      const label = course.code + "・星期" + (course.day || "—") + "・" + periodText;
-      return '<button class="focus-variant-option' + (isCurrent ? " is-current" : "") + (isSelected ? " is-selected" : "") + '" type="button" data-action="focus-variant" data-id="' + course.id + '" aria-pressed="' + isCurrent + '" aria-label="' + escapeHtml(label) + '">' +
-        "<strong>" + escapeHtml(course.code) + "</strong><span>星期" + escapeHtml(course.day || "—") + "・" + escapeHtml(periodText) + "</span></button>";
+      const label = course.code + "・星期" + (course.day || "—") + "・" + periodText + (conflicts.length ? "・衝堂：" + conflictNames(conflicts) : "");
+      return '<button class="focus-variant-option' + (isCurrent ? " is-current" : "") + (isSelected ? " is-selected" : "") + (conflicts.length ? " is-conflict" : "") + '" type="button" data-action="focus-variant" data-id="' + course.id + '" aria-pressed="' + isCurrent + '" aria-label="' + escapeHtml(label) + '">' +
+        "<strong>" + escapeHtml(course.code) + "</strong><span>星期" + escapeHtml(course.day || "—") + "・" + escapeHtml(periodText) + (conflicts.length ? "・衝堂" : "") + "</span></button>";
     }
 
     function renderBoard() {
