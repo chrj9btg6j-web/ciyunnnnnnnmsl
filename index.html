@@ -65,7 +65,10 @@
       pointer-events: none;
     }
     body.landing-active,
-    body.panel-open { overflow: hidden; }
+    body.panel-open {
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
     .landing-screen {
       --landing-x: 50%;
       --landing-y: 50%;
@@ -601,6 +604,8 @@
       backdrop-filter: blur(34px) saturate(1.28) contrast(1.04);
       -webkit-backdrop-filter: blur(34px) saturate(1.28) contrast(1.04);
       isolation: isolate;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
       --shine-x: 16%;
       --shine-y: 8%;
       opacity: 0;
@@ -620,11 +625,21 @@
       z-index: 1;
       min-height: 0;
       height: 100%;
-      overflow-y: auto;
+      overflow-x: hidden;
+      overflow-y: scroll;
       overscroll-behavior-y: contain;
+      overscroll-behavior-x: none;
       -webkit-overflow-scrolling: touch;
       touch-action: pan-y;
       padding: 28px 24px 44px;
+    }
+    .panel-inner button,
+    .panel-inner summary,
+    .panel-inner a,
+    .panel-inner input,
+    .panel-inner .course-card {
+      touch-action: pan-y;
+      -webkit-user-drag: none;
     }
     .panel-head {
       display: flex;
@@ -937,7 +952,7 @@
         border-left: 1px solid rgba(255, 255, 255, .66);
         overscroll-behavior: contain;
       }
-      .panel-inner { max-width: 640px; height: 100%; min-height: 0; margin: 0 auto; touch-action: pan-y; }
+      .panel-inner { max-width: 640px; height: 100%; min-height: 0; margin: 0 auto; overflow-x: hidden; overflow-y: scroll; overscroll-behavior-y: contain; touch-action: pan-y; }
     }
     @media (max-width: 620px) {
       .topbar { min-height: 0; margin: 10px 12px 0; padding: 12px 14px; border-radius: 20px; gap: 8px; }
@@ -971,6 +986,27 @@
       .schedule-board.schedule-scale-3 { --schedule-row-height: 56px; --schedule-head-height: 36px; --schedule-period-width: 36px; --schedule-min-width: 580px; --schedule-font-size: .62rem; --schedule-head-font-size: .64rem; --slot-min-height: 42px; --slot-padding: 5px 5px 4px; --slot-title-size: .66rem; --slot-meta-size: .54rem; }
       .schedule-board.schedule-scale-4 { --schedule-row-height: 70px; --schedule-head-height: 43px; --schedule-period-width: 44px; --schedule-min-width: 700px; --schedule-font-size: .70rem; --schedule-head-font-size: .72rem; --slot-min-height: 54px; --slot-padding: 6px 6px 5px; --slot-title-size: .74rem; --slot-meta-size: .62rem; }
       .schedule-board.schedule-scale-5 { --schedule-row-height: 86px; --schedule-head-height: 50px; --schedule-period-width: 52px; --schedule-min-width: 840px; --schedule-font-size: .78rem; --schedule-head-font-size: .80rem; --slot-min-height: 68px; --slot-padding: 7px 7px 6px; --slot-title-size: .82rem; --slot-meta-size: .68rem; }
+    }
+    @media (pointer: coarse) and (max-width: 1024px) {
+      .panel-frame {
+        position: fixed;
+        inset: 12px;
+        z-index: 25;
+        height: calc(100vh - 24px);
+        height: calc(100dvh - 24px);
+        max-height: calc(100dvh - 24px);
+        margin: 0;
+        overscroll-behavior: contain;
+        touch-action: pan-y;
+      }
+      .panel-inner {
+        height: 100%;
+        overflow-x: hidden;
+        overflow-y: scroll;
+        overscroll-behavior-y: contain;
+        touch-action: pan-y;
+      }
+      .course-card[draggable="true"] { -webkit-user-drag: none; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
@@ -1066,6 +1102,7 @@
   <script>
     "use strict";
     const projectBasePath = location.hostname.endsWith("github.io") ? "/ciyunnnnnnnmsl/" : "./";
+    const touchInput = window.matchMedia("(pointer: coarse)").matches;
     document.documentElement.style.setProperty("--sky-image", 'url("' + projectBasePath + 'sky-clouds-reference-pale.png")');
 
     const currentRows = [
@@ -1512,7 +1549,7 @@
       const selected = selectedIds.has(course.id);
       const badge = course.closed ? '<span class="course-badge warn">不可選</span>' : course.restricted ? '<span class="course-badge warn">資格</span>' : '<span class="course-badge">' + stageLabel(course) + "</span>";
       const action = course.closed ? '<button class="course-action inspect" type="button" data-action="detail" data-id="' + course.id + '">查看</button>' : '<button class="course-action ' + (selected ? "remove" : "") + '" type="button" data-action="toggle" data-id="' + course.id + '">' + (selected ? "移除" : "加入") + "</button>";
-      return '<article class="course-card ' + (selected ? "is-selected " : "") + (course.closed ? "is-closed" : "") + '" draggable="' + (!course.closed) + '" data-course-id="' + course.id + '">' +
+      return '<article class="course-card ' + (selected ? "is-selected " : "") + (course.closed ? "is-closed" : "") + '" draggable="' + (!course.closed && !touchInput) + '" data-course-id="' + course.id + '">' +
         '<div class="course-card-head"><div><div class="code">' + escapeHtml(course.code) + "</div><h3>" + escapeHtml(course.name) + '</h3></div><span class="credits">' + course.credits + " 學分</span></div>" +
         '<div class="course-path">' + escapeHtml(coursePathLabel(course)) + "</div>" +
         '<div class="course-line">' + escapeHtml(course.day || "待核對") + (course.period ? "・第 " + escapeHtml(String(course.period).split(" ")[0]) + " 節" : "") + (course.location === "校內教室" || !course.period ? "" : "・" + escapeHtml(course.location)) + "　" + escapeHtml(course.teacher) + "</div>" +
@@ -1552,7 +1589,7 @@
 
     function renderCourseGroup(group, index) {
       const openBySearch = Boolean(searchQuery.trim());
-      const openGroup = openBySearch || activeStage === "current" || activeStage === "labor";
+      const openGroup = openBySearch;
       const credits = group.courses.reduce(function(total, course) { return total + course.credits; }, 0);
       let body = "";
       if (activeStage === "department") {
@@ -1578,6 +1615,7 @@
       const list = document.getElementById("courseList");
       if (!list) return null;
       return {
+        hasDetails: Boolean(list.querySelector("details.course-group")),
         scrollTop: panelContent ? panelContent.scrollTop : 0,
         openGroups: Array.from(list.querySelectorAll("details.course-group")).map(function(details, index) { return details.open ? index : -1; }).filter(function(index) { return index >= 0; }),
         openSubgroups: Array.from(list.querySelectorAll("details.course-subgroup")).map(function(details, index) { return details.open ? index : -1; }).filter(function(index) { return index >= 0; })
@@ -1591,10 +1629,10 @@
       const openGroups = new Set(view.openGroups || []);
       const openSubgroups = new Set(view.openSubgroups || []);
       list.querySelectorAll("details.course-group").forEach(function(details, index) {
-        details.open = openGroups.has(index) || details.open;
+        details.open = view.hasDetails ? openGroups.has(index) : details.open;
       });
       list.querySelectorAll("details.course-subgroup").forEach(function(details, index) {
-        details.open = openSubgroups.has(index) || details.open;
+        details.open = view.hasDetails ? openSubgroups.has(index) : details.open;
       });
       if (panelContent) {
         const restoreScroll = function() {
