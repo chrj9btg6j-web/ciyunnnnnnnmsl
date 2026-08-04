@@ -1,0 +1,1808 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f8fb">
+  <title>CYUT 115-1｜課表規劃</title>
+  <style>
+    :root {
+      --ink: #26343d;
+      --muted: #71808a;
+      --quiet: #9aa7ae;
+      --line: #dbe4e9;
+      --line-strong: #c6d5dc;
+      --paper: #fafcfd;
+      --paper-strong: #f5f8fa;
+      --sky: #e5f0f7;
+      --sky-deep: #466f87;
+      --aqua: #e4f2ef;
+      --aqua-deep: #4b7c78;
+      --violet: #ececf5;
+      --warn: #b67a6c;
+      --warn-bg: #fbf0ed;
+      --ok: #4e8278;
+      --ok-bg: #eef7f3;
+      --shadow: 0 24px 64px rgba(57, 79, 91, .12);
+      --glass: rgba(255, 255, 255, .14);
+      --glass-border: rgba(255, 255, 255, .62);
+      --sky-image: url("sky-clouds-reference-pale.png");
+      --ease: cubic-bezier(.22, 1, .36, 1);
+    }
+
+    * { box-sizing: border-box; }
+    html { min-width: 320px; background: #f3f7fa; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      color: var(--ink);
+      background: #f5f8fa;
+      font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+      letter-spacing: .008em;
+    }
+    body::before {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      content: "";
+      background:
+        radial-gradient(circle at 14% 12%, rgba(145, 205, 226, .34), transparent 25%),
+        radial-gradient(circle at 83% 24%, rgba(167, 195, 226, .30), transparent 29%),
+        radial-gradient(ellipse at 58% 86%, rgba(189, 224, 235, .28), transparent 38%),
+        linear-gradient(180deg, rgba(238, 248, 253, .16), rgba(247, 250, 252, .34)),
+        var(--sky-image) center bottom / cover no-repeat;
+      filter: saturate(.44) brightness(1.02) contrast(1.04);
+      opacity: .94;
+      pointer-events: none;
+    }
+    body::after {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      content: "";
+      background: linear-gradient(180deg, rgba(247, 250, 252, .04), rgba(247, 250, 252, .16) 54%, rgba(247, 250, 252, .34));
+      pointer-events: none;
+    }
+    body.landing-active { overflow: hidden; }
+    .landing-screen {
+      --landing-x: 50%;
+      --landing-y: 50%;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at var(--landing-x) var(--landing-y), rgba(155, 204, 225, .42), transparent 16rem),
+        radial-gradient(ellipse at 50% 115%, rgba(186, 220, 232, .58), transparent 54%),
+        linear-gradient(128deg, #dcecf3 0%, #f5f8fa 47%, #c7e0eb 100%);
+      cursor: crosshair;
+      isolation: isolate;
+      opacity: 1;
+      transform: scale(1);
+      transition: opacity 500ms cubic-bezier(.16, 1, .3, 1), transform 500ms cubic-bezier(.16, 1, .3, 1);
+    }
+    .landing-screen.is-leaving {
+      opacity: 0;
+      transform: scale(1.035);
+      pointer-events: none;
+    }
+    .landing-screen[hidden] { display: none; }
+    .landing-screen::before {
+      position: absolute;
+      inset: -12%;
+      z-index: -1;
+      content: "";
+      background:
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, .032) 0 1px, transparent 1px 8px),
+        radial-gradient(circle at 50% 50%, transparent 0 20%, rgba(70, 111, 135, .12) 82%);
+      opacity: .48;
+      mix-blend-mode: multiply;
+      pointer-events: none;
+    }
+    .landing-screen::after {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      content: "";
+      background: radial-gradient(circle at var(--landing-x) var(--landing-y), rgba(255, 255, 255, .52), transparent 7rem);
+      opacity: .88;
+      transition: opacity 120ms ease-out;
+      pointer-events: none;
+    }
+    .landing-canvas {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .landing-center {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      justify-items: center;
+      gap: clamp(28px, 5vh, 52px);
+      padding: 24px;
+      text-align: center;
+    }
+    .landing-wordmark {
+      position: relative;
+      font-size: clamp(4.2rem, 15vw, 12rem);
+      font-weight: 600;
+      letter-spacing: -.12em;
+      line-height: .8;
+      color: rgba(70, 111, 135, .94);
+      text-shadow: 0 16px 60px rgba(70, 111, 135, .18), 0 0 34px rgba(255, 255, 255, .66);
+      user-select: none;
+    }
+    .landing-wordmark::after {
+      position: absolute;
+      inset: -28% -18%;
+      z-index: -1;
+      content: "";
+      border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(155, 204, 225, .26), transparent 68%);
+      filter: blur(18px);
+      pointer-events: none;
+    }
+    .landing-enter {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 52px;
+      padding: 12px 20px 12px 22px;
+      border: 1px solid rgba(255, 255, 255, .72);
+      border-radius: 999px;
+      color: var(--sky-deep);
+      background: linear-gradient(135deg, rgba(255, 255, 255, .72), rgba(228, 242, 247, .72));
+      box-shadow: 0 18px 48px rgba(57, 91, 107, .16), inset 0 1px 0 rgba(255, 255, 255, .92);
+      font-size: .98rem;
+      font-weight: 600;
+      letter-spacing: .04em;
+      transition: transform 140ms cubic-bezier(.34, 1.56, .64, 1), box-shadow 180ms ease, background 180ms ease;
+    }
+    .landing-enter span { font-size: 1.18em; line-height: 1; }
+    .landing-enter:hover { transform: translateY(-2px) scale(1.02); background: rgba(255, 255, 255, .92); box-shadow: 0 24px 58px rgba(57, 91, 107, .2), inset 0 1px 0 rgba(255, 255, 255, 1); }
+    .landing-enter:active { transform: scale(.96); }
+    .landing-enter:focus-visible { outline-color: rgba(220, 244, 255, .9); }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: .52; }
+    :focus-visible { outline: 3px solid rgba(70, 111, 135, .28); outline-offset: 3px; }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      min-height: 100vh;
+      max-width: 1580px;
+      margin: 0 auto;
+      transition: grid-template-columns 360ms var(--ease);
+    }
+    .app-shell.panel-open {
+      grid-template-columns: minmax(0, 1fr) minmax(350px, 430px);
+    }
+    .content-column { min-width: 0; }
+    .topbar {
+      position: sticky;
+      top: 16px;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+      min-height: 68px;
+      margin: 16px clamp(16px, 3.4vw, 48px) 0;
+      padding: 12px 16px 12px 20px;
+      border: 1px solid rgba(255, 255, 255, .62);
+      border-radius: 28px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, .09), rgba(155, 215, 233, .16) 54%, rgba(255, 255, 255, .07));
+      box-shadow: 0 20px 48px rgba(57, 91, 107, .14), inset 1px 1px 0 rgba(255, 255, 255, .80), inset 0 -16px 34px rgba(108, 193, 219, .12), inset -1px -1px 0 rgba(117, 182, 205, .18);
+      backdrop-filter: blur(32px) saturate(1.28) contrast(1.04);
+      -webkit-backdrop-filter: blur(32px) saturate(1.28) contrast(1.04);
+      isolation: isolate;
+      overflow: hidden;
+      --shine-x: 16%;
+      --shine-y: 8%;
+    }
+    .topbar::before,
+    .panel-frame::before,
+    .glass-control::before,
+    .toast::before {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      border-radius: inherit;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, .86), transparent 20%, transparent 62%, rgba(255, 255, 255, .08)),
+        radial-gradient(ellipse at 14% 0%, rgba(255, 255, 255, .48), transparent 42%),
+        radial-gradient(ellipse at 92% 110%, rgba(102, 190, 219, .22), transparent 48%);
+      content: "";
+      pointer-events: none;
+      mix-blend-mode: screen;
+      opacity: .58;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18);
+    }
+    .topbar::after,
+    .panel-frame::after,
+    .glass-control::after,
+    .toast::after {
+      position: absolute;
+      inset: -24%;
+      z-index: 0;
+      border-radius: inherit;
+      background:
+        radial-gradient(ellipse at var(--shine-x) var(--shine-y), rgba(255, 255, 255, .52), transparent 23%),
+        linear-gradient(116deg, transparent 28%, rgba(255, 255, 255, .22) 38%, transparent 49%),
+        radial-gradient(ellipse at 90% 110%, rgba(102, 190, 219, .22), transparent 34%);
+      content: "";
+      pointer-events: none;
+      mix-blend-mode: screen;
+      opacity: .38;
+      filter: blur(3px);
+      transition: opacity 120ms ease;
+    }
+    .topbar.is-lit::before,
+    .panel-frame.is-lit::before,
+    .glass-control.is-lit::before,
+    .toast.is-lit::before { opacity: .78; }
+    .topbar.is-lit::after,
+    .panel-frame.is-lit::after,
+    .glass-control.is-lit::after,
+    .toast.is-lit::after { opacity: .82; }
+    .topbar > *, .panel-inner, .glass-control > * { position: relative; z-index: 1; }
+    .brand { min-width: 0; }
+    .eyebrow {
+      display: block;
+      color: var(--quiet);
+      font-size: .68rem;
+      font-weight: 760;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+    .brand h1 {
+      margin: 0;
+      color: var(--ink);
+      font-size: 1.18rem;
+      font-weight: 620;
+      letter-spacing: -.025em;
+      line-height: 1.04;
+    }
+    .brand p {
+      margin: 0;
+      color: var(--muted);
+      font-size: .8rem;
+    }
+    .top-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .data-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-right: 8px;
+      color: var(--muted);
+      font-size: .73rem;
+      white-space: nowrap;
+    }
+    .data-status::before {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #7ca79f;
+      box-shadow: 0 0 0 4px rgba(124, 167, 159, .15);
+      content: "";
+    }
+    .glass-control {
+      min-height: 38px;
+      padding: 8px 13px;
+      border: 1px solid var(--glass-border);
+      border-radius: 13px;
+      color: #4d6c7b;
+      position: relative;
+      border-color: rgba(255, 255, 255, .60);
+      border-radius: 16px;
+      color: #3f687b;
+      background: linear-gradient(135deg, rgba(255, 255, 255, .08), rgba(150, 211, 232, .16));
+      box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .76), inset -1px -1px 0 rgba(116, 164, 182, .10), 0 12px 28px rgba(46, 78, 93, .11);
+      backdrop-filter: blur(30px) saturate(1.32) contrast(1.05);
+      -webkit-backdrop-filter: blur(30px) saturate(1.32) contrast(1.05);
+      isolation: isolate;
+      overflow: hidden;
+      transition: transform 140ms var(--ease), background 180ms ease, box-shadow 180ms ease;
+    }
+    .glass-control:hover { transform: translateY(-1px) scale(1.02); background: linear-gradient(135deg, rgba(255, 255, 255, .32), rgba(225, 243, 250, .13)); box-shadow: inset 1px 1px 0 #fff, 0 16px 30px rgba(46, 78, 93, .15); }
+    .glass-control:active { transform: scale(.97); }
+    .glass-control.primary { color: #f8fcfd; background: linear-gradient(135deg, rgba(63, 108, 130, .78), rgba(77, 139, 160, .48)); }
+
+    .main-content { padding: 20px clamp(20px, 3.4vw, 48px) 54px; }
+    .schedule-board {
+      overflow: hidden;
+      border: 1px solid rgba(210, 222, 228, .94);
+      border-radius: 26px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      transition: filter 360ms ease, transform 360ms var(--ease), opacity 360ms ease;
+    }
+    .panel-open .schedule-board { filter: saturate(.58); opacity: .92; transform: scale(.985); }
+    .board-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 28px 30px 23px;
+      border-bottom: 1px solid var(--line);
+    }
+    .board-head h2 {
+      margin: 5px 0 6px;
+      font-size: 1.04rem;
+      font-weight: 620;
+      letter-spacing: -.015em;
+    }
+    .board-head p { margin: 0; color: var(--muted); font-size: .8rem; }
+    .board-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .metric {
+      min-width: 76px;
+      padding: 9px 11px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #f5f8fa;
+      text-align: right;
+    }
+    .metric small, .metric strong { display: block; }
+    .metric small { color: var(--quiet); font-size: .66rem; }
+    .metric strong { margin-top: 2px; color: var(--ink); font-size: 1.02rem; font-weight: 700; }
+    .calendar-scroll { overflow-x: auto; }
+    .schedule {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: .72rem;
+    }
+    .schedule th, .schedule td {
+      height: 76px;
+      padding: 6px;
+      border-right: 1px solid #e1e8ec;
+      border-bottom: 1px solid #e1e8ec;
+      vertical-align: top;
+    }
+    .schedule th {
+      height: 43px;
+      color: #5c737e;
+      background: #f3f7f9;
+      font-size: .72rem;
+      font-weight: 760;
+      text-align: center;
+    }
+    .schedule th:first-child, .schedule td.period { width: 54px; }
+    .schedule td.period {
+      color: var(--quiet);
+      background: #f6f9fa;
+      font-weight: 700;
+      text-align: center;
+    }
+    .schedule td[data-day] {
+      position: relative;
+      transition: background 160ms ease, box-shadow 160ms ease;
+    }
+    .schedule td[data-day]::after {
+      position: absolute;
+      inset: 5px;
+      z-index: 0;
+      border-radius: 9px;
+      background: rgba(255, 255, 255, .58);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .82), 0 0 18px rgba(255, 255, 255, .22);
+      content: "";
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(.96);
+      transition: opacity 180ms ease, background 180ms ease, box-shadow 180ms ease, transform 220ms var(--ease);
+    }
+    .schedule td[data-day] > .slot { position: relative; z-index: 1; }
+    body.is-dragging .schedule td[data-day] { cursor: copy; }
+    body.is-dragging .schedule td[data-day].drag-candidate::after,
+    body.is-dragging .schedule td[data-day].drag-over-safe::after {
+      opacity: .88;
+      transform: scale(1);
+    }
+    body.is-dragging .schedule td[data-day].drag-conflict::after,
+    body.is-dragging .schedule td[data-day].drag-over-conflict::after {
+      background: rgba(236, 184, 176, .34);
+      box-shadow: inset 0 0 0 1px rgba(201, 123, 109, .28), 0 0 18px rgba(201, 123, 109, .16);
+    }
+    .schedule td[data-day]:hover, .schedule td[data-day].is-drop-target {
+      background: #edf6f7;
+      box-shadow: inset 0 0 0 2px rgba(75, 124, 120, .2);
+    }
+    .slot {
+      display: block;
+      width: 100%;
+      min-height: 58px;
+      padding: 8px 8px 7px;
+      border: 1px solid rgba(255, 255, 255, .96);
+      border-radius: 11px;
+      color: #304d5b;
+      background: var(--sky);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .93), 0 6px 13px rgba(67, 104, 120, .08);
+      text-align: left;
+      transition: transform 140ms var(--ease), box-shadow 180ms ease, background 220ms ease;
+    }
+    .slot:hover { transform: translateY(-1px) scale(1.012); box-shadow: inset 0 1px 0 #fff, 0 9px 16px rgba(67, 104, 120, .13); }
+    .slot span, .slot small { display: block; }
+    .slot span { overflow: hidden; font-size: .75rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+    .slot small { margin-top: 6px; color: rgba(48, 77, 91, .7); font-size: .64rem; line-height: 1.35; }
+    .slot.tone-1 { background: var(--aqua); color: #385d5c; }
+    .slot.tone-2 { background: var(--violet); color: #5d5f7b; }
+    .slot.tone-3 { background: #e7eef2; color: #496674; }
+    .slot.tone-4 { background: #eaf2f0; color: #4b6e6c; }
+    .slot.labor { background: #e2eef5; color: #496b81; }
+    .slot.required-human { background: #e9edf7; color: #5c6581; }
+    .slot.required-social { background: #e8f0f2; color: #55727b; }
+    .slot.required-natural { background: #e9f1ec; color: #5b786e; }
+    .slot.required-comprehensive { background: #edf0f5; color: #66718a; }
+    .slot.required-english { background: #e5f0f5; color: #547789; }
+    .slot.required-basic { background: #eef3f4; color: #60777d; }
+    .slot.department { background: #e4eff4; color: #506f7f; }
+    .slot.conflict { background: var(--warn-bg); color: #a65e52; box-shadow: inset 0 0 0 1px rgba(182, 122, 108, .42), 0 6px 13px rgba(182, 122, 108, .11); }
+    .slot.is-entering, .course-card.is-entering { animation: liquid-in 420ms var(--ease) both; }
+    .slot.is-leaving, .course-card.is-leaving { animation: liquid-out 300ms cubic-bezier(.4, 0, .2, 1) both; }
+    .slot.is-snapping { animation: liquid-snap 480ms var(--ease) both; }
+    .slot.is-invalid { animation: liquid-invalid 360ms var(--ease) both; }
+    .course-card.is-returning { animation: liquid-return 420ms var(--ease) both; }
+    .schedule td[data-day].drop-invalid { animation: liquid-invalid 360ms var(--ease) both; }
+    .schedule td[data-day].snap-confirm { animation: liquid-snap 520ms var(--ease) both; }
+    .board-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 16px 24px;
+      color: var(--muted);
+      background: #f8fafb;
+      font-size: .75rem;
+    }
+    .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+    .legend span::before {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 6px;
+      border-radius: 3px;
+      background: var(--sky);
+      content: "";
+      vertical-align: -1px;
+    }
+    .legend .legend-labor::before { background: #e2eef5; }
+    .legend .legend-conflict::before { background: var(--warn-bg); border: 1px solid rgba(182, 122, 108, .42); }
+    .drag-status {
+      min-width: 170px;
+      color: #5d7783;
+      font-size: .72rem;
+      text-align: right;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(2px) scale(.98);
+      transition: opacity 180ms ease, transform 220ms var(--ease), color 180ms ease;
+    }
+    .drag-status.is-visible { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+    .drag-status::before {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      margin-right: 6px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .92);
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, .28);
+      content: "";
+    }
+    .drag-status.is-conflict { color: #a5675b; }
+    .drag-status.is-conflict::before { background: #e6b3aa; box-shadow: 0 0 0 4px rgba(201, 123, 109, .12); }
+
+    .panel-frame {
+      position: sticky;
+      top: 16px;
+      height: calc(100vh - 32px);
+      min-width: 0;
+      margin: 0 16px 16px 0;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, .66);
+      border-radius: 28px;
+      background: linear-gradient(145deg, rgba(255, 255, 255, .08), rgba(150, 211, 232, .17) 56%, rgba(255, 255, 255, .06));
+      box-shadow: -18px 22px 60px rgba(45, 87, 104, .18), inset 1px 1px 0 rgba(255, 255, 255, .80), inset 0 -22px 44px rgba(105, 190, 219, .13), inset -1px -1px 0 rgba(117, 182, 205, .18);
+      backdrop-filter: blur(34px) saturate(1.28) contrast(1.04);
+      -webkit-backdrop-filter: blur(34px) saturate(1.28) contrast(1.04);
+      isolation: isolate;
+      --shine-x: 16%;
+      --shine-y: 8%;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(18px);
+      transition: opacity 260ms ease, transform 360ms var(--ease);
+      visibility: hidden;
+    }
+    .panel-frame.is-open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+      visibility: visible;
+    }
+    .panel-inner {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      overflow-y: auto;
+      padding: 28px 24px 44px;
+    }
+    .panel-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    .panel-head h2 { margin: 0; font-size: 1.08rem; font-weight: 620; letter-spacing: -.02em; }
+    .panel-head p { margin: 0; color: var(--muted); font-size: .78rem; line-height: 1.55; }
+    .panel-close {
+      flex: none;
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      color: var(--muted);
+      position: relative;
+      border-color: rgba(255, 255, 255, .58);
+      color: var(--muted);
+      background: linear-gradient(135deg, rgba(255, 255, 255, .22), rgba(228, 245, 251, .08));
+      box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 rgba(124, 174, 194, .10), 0 10px 22px rgba(48, 75, 88, .10);
+      backdrop-filter: blur(28px) saturate(1.3);
+      -webkit-backdrop-filter: blur(28px) saturate(1.3);
+      isolation: isolate;
+      overflow: hidden;
+    }
+    .panel-close:hover { color: var(--ink); background: linear-gradient(135deg, rgba(255, 255, 255, .34), rgba(228, 245, 251, .14)); }
+    .panel-note {
+      margin: 16px 0;
+      padding: 12px 13px;
+      border: 1px solid #dce8ed;
+      border-radius: 13px;
+      color: #647b86;
+      background: #f1f8fb;
+      font-size: .76rem;
+      line-height: 1.6;
+    }
+    .panel-note a { color: #4b7890; font-weight: 700; text-decoration: none; }
+    .panel-note a:hover { text-decoration: underline; }
+    .stage-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 16px 0;
+    }
+    .stage-tab {
+      min-height: 62px;
+      padding: 10px 11px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      color: var(--muted);
+      background: #f7fbfc;
+      text-align: left;
+      transition: transform 140ms var(--ease), background 180ms ease, border-color 180ms ease;
+    }
+    .stage-tab:hover { transform: scale(1.012); }
+    .stage-tab[aria-selected="true"] { border-color: #b8d4de; color: var(--sky-deep); background: #e9f3f7; }
+    .stage-tab strong, .stage-tab small { display: block; }
+    .stage-tab strong { font-size: .8rem; }
+    .stage-tab small { margin-top: 4px; font-size: .68rem; }
+    .field { display: grid; gap: 6px; margin-bottom: 14px; }
+    .field label { color: var(--muted); font-size: .72rem; }
+    .field input, .field textarea {
+      width: 100%;
+      border: 1px solid var(--line-strong);
+      border-radius: 11px;
+      color: var(--ink);
+      background: #fafcfd;
+      outline: none;
+      transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+    .field input { min-height: 39px; padding: 8px 11px; }
+    .field textarea { min-height: 92px; padding: 10px 11px; resize: vertical; line-height: 1.5; }
+    .field input:focus, .field textarea:focus { border-color: #9ebfcd; background: #fff; box-shadow: 0 0 0 4px rgba(158, 191, 205, .16); }
+    .list-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 2px 0 10px;
+      color: var(--quiet);
+      font-size: .7rem;
+    }
+    .course-list { display: grid; gap: 9px; }
+    .course-group, .course-subgroup {
+      overflow: hidden;
+      border: 1px solid #dce7eb;
+      border-radius: 15px;
+      background: #f7fbfc;
+    }
+    .course-group > summary, .course-subgroup > summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 54px;
+      padding: 11px 13px;
+      color: var(--ink);
+      cursor: pointer;
+      list-style: none;
+      transition: background 160ms ease, transform 140ms var(--ease);
+    }
+    .course-group > summary::-webkit-details-marker, .course-subgroup > summary::-webkit-details-marker { display: none; }
+    .course-group > summary::before, .course-subgroup > summary::before {
+      flex: none;
+      width: 7px;
+      height: 7px;
+      border-right: 1.5px solid #7b9aa7;
+      border-bottom: 1.5px solid #7b9aa7;
+      content: "";
+      transform: rotate(-45deg);
+      transition: transform 180ms var(--ease);
+    }
+    .course-group[open] > summary::before, .course-subgroup[open] > summary::before { transform: rotate(45deg); }
+    .course-group > summary:hover, .course-subgroup > summary:hover { background: #edf6f8; }
+    .course-group > summary > span, .course-subgroup > summary > span { display: grid; min-width: 0; gap: 3px; }
+    .course-group > summary strong { font-size: .8rem; }
+    .course-group > summary small, .course-subgroup > summary small { color: var(--muted); font-size: .67rem; font-weight: 500; }
+    .course-group > summary em { flex: none; color: var(--quiet); font-size: .67rem; font-style: normal; white-space: nowrap; }
+    .course-group-list {
+      display: grid;
+      gap: 8px;
+      padding: 9px;
+      border-top: 1px solid #e3ecef;
+      background: #fbfdfe;
+    }
+    .course-subgroup { margin: 9px; border-radius: 12px; background: #f9fcfd; }
+    .course-subgroup > summary { min-height: 42px; padding: 8px 10px; font-size: .74rem; }
+    .course-subgroup > summary > span { flex: 1; color: var(--muted); }
+    .course-subgroup > summary small { flex: none; white-space: nowrap; }
+    .course-subgroup .course-group-list { padding: 8px; }
+    .course-card {
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, .72);
+      box-shadow: 0 7px 18px rgba(50, 76, 88, .05);
+      transition: transform 140ms var(--ease), border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+    .course-card:hover { transform: translateY(-1px); border-color: #b9d2dc; box-shadow: 0 11px 22px rgba(50, 76, 88, .08); }
+    .course-card.is-selected { border-color: #b4d4d2; background: #f0f8f6; }
+    .course-card.is-closed { background: #f5f7f8; }
+    .course-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .course-card h3 { margin: 0; color: var(--ink); font-size: .9rem; font-weight: 700; line-height: 1.4; }
+    .course-card .code { color: var(--sky-deep); font-size: .7rem; letter-spacing: .06em; }
+    .course-card .credits { flex: none; color: var(--muted); font-size: .7rem; }
+    .course-path { margin-top: 5px; color: var(--sky-deep); font-size: .67rem; line-height: 1.35; }
+    .course-line { margin-top: 7px; color: var(--muted); font-size: .72rem; line-height: 1.45; }
+    .course-note { margin-top: 6px; color: #8c999f; font-size: .69rem; line-height: 1.5; }
+    .course-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; }
+    .course-badge {
+      display: inline-flex;
+      min-height: 22px;
+      align-items: center;
+      padding: 3px 7px;
+      border-radius: 7px;
+      color: #6c828b;
+      background: #eef4f6;
+      font-size: .65rem;
+    }
+    .course-badge.warn { color: #a5675b; background: var(--warn-bg); }
+    .course-action, .minor-action {
+      min-height: 31px;
+      padding: 6px 9px;
+      border: 1px solid #c8dbe2;
+      border-radius: 9px;
+      color: var(--sky-deep);
+      background: #f4f9fb;
+      font-size: .72rem;
+      transition: transform 140ms var(--ease), background 160ms ease;
+    }
+    .course-action:hover, .minor-action:hover { transform: scale(1.02); background: #e9f3f7; }
+    .course-action.remove { color: var(--aqua-deep); border-color: #c4ddd9; background: #f1f8f6; }
+    .course-action.inspect { color: var(--muted); border-color: var(--line); background: #f7f9fa; }
+    .empty-state {
+      padding: 22px 14px;
+      border: 1px dashed #cddde3;
+      border-radius: 13px;
+      color: var(--muted);
+      background: #f8fbfc;
+      font-size: .78rem;
+      line-height: 1.6;
+      text-align: center;
+    }
+    .selected-zone { margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--line); }
+    .selected-zone h3 { margin: 0 0 10px; font-size: .92rem; }
+    .selected-mini { display: grid; gap: 7px; }
+    .selected-mini-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 9px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      color: var(--muted);
+      background: #f8fbfc;
+      font-size: .72rem;
+    }
+    .selected-mini-row strong { color: var(--ink); font-size: .76rem; }
+
+    .audit-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 18px 0; }
+    .audit-stat { padding: 13px; border: 1px solid var(--line); border-radius: 13px; background: #fafcfd; }
+    .audit-stat small, .audit-stat strong { display: block; }
+    .audit-stat small { color: var(--quiet); font-size: .68rem; }
+    .audit-stat strong { margin-top: 4px; color: var(--ink); font-size: 1.16rem; }
+    .audit-list { display: grid; gap: 8px; margin: 15px 0 20px; }
+    .audit-message { padding: 11px 12px; border-radius: 11px; font-size: .76rem; line-height: 1.55; }
+    .audit-message.ok { color: #47796f; background: var(--ok-bg); }
+    .audit-message.warn { color: #8d645b; background: #fcf3ef; }
+    .audit-message.error { color: #9d5a50; background: var(--warn-bg); box-shadow: inset 0 0 0 1px rgba(182, 122, 108, .23); }
+    .audit-block { margin-top: 22px; padding-top: 19px; border-top: 1px solid var(--line); }
+    .audit-block h3 { margin: 0 0 7px; font-size: .92rem; }
+    .audit-block p { margin: 0 0 12px; color: var(--muted); font-size: .73rem; line-height: 1.55; }
+    .button-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .minor-action.primary { color: #f7fbfc; border-color: #6c93a6; background: #5b8194; }
+    .report-status { min-height: 18px; margin-top: 8px; color: var(--ok); font-size: .7rem; }
+    .detail-card { margin-top: 18px; padding: 18px; border: 1px solid var(--line); border-radius: 16px; background: #fafcfd; box-shadow: 0 12px 28px rgba(48, 76, 89, .06); }
+    .detail-code { color: var(--sky-deep); font-size: .72rem; letter-spacing: .08em; }
+    .detail-card h3 { margin: 7px 0 13px; font-size: 1.24rem; line-height: 1.35; }
+    .detail-list { display: grid; gap: 8px; margin: 0; }
+    .detail-list div { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 9px; padding-top: 8px; border-top: 1px solid #e8eef1; font-size: .74rem; line-height: 1.5; }
+    .detail-list dt { color: var(--quiet); }
+    .detail-list dd { margin: 0; color: var(--ink); }
+    .detail-actions { margin-top: 17px; }
+    .toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 50;
+      max-width: min(360px, calc(100vw - 44px));
+      padding: 11px 14px;
+      border: 1px solid rgba(255, 255, 255, .92);
+      border-radius: 13px;
+      color: #466674;
+      background: linear-gradient(135deg, rgba(255, 255, 255, .28), rgba(228, 245, 251, .12));
+      box-shadow: 0 16px 34px rgba(48, 76, 89, .16), inset 1px 1px 0 #fff, inset -1px -1px 0 rgba(124, 174, 194, .10);
+      backdrop-filter: blur(30px) saturate(1.26);
+      -webkit-backdrop-filter: blur(30px) saturate(1.26);
+      isolation: isolate;
+      overflow: hidden;
+      --shine-x: 16%;
+      --shine-y: 8%;
+      font-size: .76rem;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: opacity 180ms ease, transform 220ms var(--ease);
+    }
+    .toast.is-visible { opacity: 1; transform: translateY(0); }
+    .panel-inner.is-refreshing, .course-list.is-refreshing { animation: content-refresh 220ms var(--ease) both; }
+    @keyframes content-refresh {
+      0% { opacity: .4; filter: blur(2px); transform: translateY(4px) scale(.985); }
+      100% { opacity: 1; filter: blur(0); transform: translateY(0) scale(1); }
+    }
+    @keyframes liquid-in {
+      0% { opacity: 0; filter: blur(8px); transform: translateY(7px) scale(.82) rotate(-.6deg); }
+      54% { opacity: 1; filter: blur(1px); transform: translateY(-2px) scale(1.035) rotate(.35deg); }
+      100% { opacity: 1; filter: blur(0); transform: translateY(0) scale(1) rotate(0); }
+    }
+    @keyframes liquid-out {
+      0% { opacity: 1; filter: blur(0); transform: translateY(0) scale(1) rotate(0); }
+      46% { opacity: .72; filter: blur(2px); transform: translateY(-3px) scale(.96) rotate(-.3deg); }
+      100% { opacity: 0; filter: blur(7px); transform: translateY(8px) scale(.74) rotate(.7deg); }
+    }
+    @keyframes liquid-snap {
+      0% { opacity: .32; filter: blur(4px); transform: translate(-7px, 10px) scale(.88) rotate(-1deg); }
+      46% { opacity: 1; filter: blur(0); transform: translate(3px, -5px) scale(1.045) rotate(.75deg); }
+      72% { transform: translate(-1px, 2px) scale(.985) rotate(-.2deg); }
+      100% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0); }
+    }
+    @keyframes liquid-invalid {
+      0%, 100% { opacity: 1; transform: translate(0, 0) scale(1); }
+      32% { opacity: .72; transform: translate(-4px, -2px) scale(.985); }
+      64% { opacity: .9; transform: translate(4px, 1px) scale(1.01); }
+    }
+    @keyframes liquid-return {
+      0% { opacity: .56; transform: translate(8px, -4px) scale(1.025) rotate(.5deg); }
+      54% { opacity: 1; transform: translate(-3px, 2px) scale(.985) rotate(-.25deg); }
+      100% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0); }
+    }
+
+    @media (max-width: 900px) {
+      .topbar { align-items: flex-start; flex-direction: column; gap: 16px; margin: 12px 16px 0; }
+      .top-actions { justify-content: flex-start; }
+      .data-status { margin-right: 2px; }
+      .app-shell.panel-open { grid-template-columns: minmax(0, 1fr); }
+      .panel-frame {
+        position: fixed;
+        inset: 12px;
+        z-index: 25;
+        height: auto;
+        margin: 0;
+        border-left: 1px solid rgba(255, 255, 255, .66);
+      }
+      .panel-inner { max-width: 640px; height: 100%; margin: 0 auto; }
+    }
+    @media (max-width: 620px) {
+      .topbar { min-height: 0; margin: 10px 12px 0; padding: 20px 18px; border-radius: 24px; }
+      .main-content { padding: 18px 12px 32px; }
+      .board-head { align-items: flex-start; flex-direction: column; padding: 22px 18px 17px; }
+      .board-metrics { justify-content: flex-start; }
+      .board-foot { align-items: flex-start; flex-direction: column; padding: 14px 17px; }
+      .panel-inner { padding: 21px 17px 34px; }
+      .stage-tabs, .audit-summary { grid-template-columns: 1fr; }
+      .glass-control { min-height: 36px; padding: 7px 10px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+      .topbar, .panel-frame, .glass-control, .panel-close, .toast { backdrop-filter: blur(30px) saturate(1.12); -webkit-backdrop-filter: blur(30px) saturate(1.12); }
+    }
+    @supports not (backdrop-filter: blur(1px)) {
+      .topbar, .panel-frame, .glass-control, .panel-close, .toast {
+        background: rgba(245, 251, 253, .86);
+      }
+    }
+  </style>
+</head>
+<body class="landing-active">
+  <section class="landing-screen" id="landingScreen" aria-label="入口">
+    <canvas class="landing-canvas" id="landingCanvas" aria-hidden="true"></canvas>
+    <div class="landing-center">
+      <div class="landing-wordmark" aria-label="CYUT">CYUT</div>
+      <button class="landing-enter" id="enterPlanner" type="button">進入課表 <span aria-hidden="true">↗</span></button>
+    </div>
+  </section>
+  <div class="app-shell" id="appShell">
+    <div class="content-column">
+      <header class="topbar">
+        <div class="brand">
+          <h1>課表</h1>
+        </div>
+        <div class="top-actions" aria-label="課表工具">
+          <span class="data-status">115-1 · 818 門</span>
+          <button class="glass-control" type="button" data-panel="library">課程</button>
+          <button class="glass-control primary" type="button" data-panel="check">檢查</button>
+        </div>
+      </header>
+
+      <main class="main-content">
+        <section class="schedule-board" aria-label="課表">
+          <div class="board-head">
+            <div>
+              <h2>課表</h2>
+            </div>
+            <div class="board-metrics" aria-live="polite">
+              <div class="metric"><small>已排課</small><strong id="metricCourses">0</strong></div>
+              <div class="metric"><small>學分</small><strong id="metricCredits">0</strong></div>
+              <div class="metric"><small>衝堂</small><strong id="metricConflicts">0</strong></div>
+            </div>
+          </div>
+          <div class="calendar-scroll">
+            <table class="schedule">
+              <thead>
+                <tr><th>節次</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr>
+              </thead>
+              <tbody id="scheduleBody"></tbody>
+            </table>
+          </div>
+          <div class="board-foot">
+            <div class="legend" aria-label="課程圖例">
+              <span>現在可選</span><span class="legend-labor">第二階段</span><span class="legend-conflict">衝堂</span>
+            </div>
+            <span class="drag-status" id="dragStatus" role="status" aria-live="polite"></span>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <aside class="panel-frame" id="panelFrame" aria-hidden="true">
+      <div class="panel-inner" id="panelContent"></div>
+    </aside>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    "use strict";
+    const projectBasePath = location.hostname.endsWith("github.io") ? "/ciyunnnnnnnmsl/" : "./";
+    document.documentElement.style.setProperty("--sky-image", 'url("' + projectBasePath + 'sky-clouds-reference-pale.png")');
+
+    const currentRows = [
+      ["0241","中國婦女史",2,"侯奇偉","五","3-4","本課程可抵人文領域","中文",60],["0242","中國婦女史",2,"侯奇偉","五","6-7","本課程可抵人文領域","中文",60],["0243","文學與人生",2,"王詩惠","五","1-2","本課程可抵人文領域","中文",60],["0244","日文(一)",2,"王淑慧","一","9-10 T2-509.1","應英系不得選讀","日文",60],["0245","日文(一)",2,"吳銘祥","二","1-2","應英系不得選讀","日文",60],["0246","日文(一)",2,"平澤佳代","二","3-4","應英系不得選讀","日文",60],["0247","日文(一)",2,"賴郁君","三","6-7","應英系不得選讀","日文",60],["0248","日文(一)",2,"楊謦綺","四","6-7","應英系不得選讀","日文",60],["0249","日文(一)",2,"楊謦綺","四","8-9","應英系不得選讀","日文",60],["0250","日文(二)",2,"吳銘祥","二","3-4","應英系不得選讀。須修過日文(一)或具基礎(至語中登記)方可選讀。","日文",60],
+      ["0251","旅遊文學",2,"蘇哲儀","二","1-2","本課程可抵人文領域","中文",60],["0252","智慧財產權",2,"莊函諺","一","8-9","本課程可抵社會領域","中文",60],["0253","德文(一)",2,"謝志明","四","8-9","","德文",60],["0254","職業倫理",2,"魏宗明","五","3-4","本課程可抵社會領域","中文",60],["0255","職業倫理",2,"魏宗明","五","6-7","本課程可抵社會領域","中文",60],["0256","台灣俗諺與禮俗",2,"廖顯謨","二","1-2","台語授課","中文",60],["0257","旅遊英文",2,"陳秀雯","三","8-9","應英系不得選讀","英文",45],["0258","法文(一)",2,"蘇珍慧","二","6-7","","法文",60],["0259","創造力",2,"邵程豪","四","3-4 T2-306.1","初選僅開放2年級，加選開放其他年級選課，日間部四技生得認列專業選修學分。","中文",45],["0260","創造力",2,"張嘉仁","二","3-4 D-307","初選僅開放2年級，加選開放其他年級選課，日間部四技生得認列專業選修學分。","中文",45],
+      ["0262","創造力",2,"王明智","四","6-7 D-308","初選僅開放2年級，加選開放其他年級選課，日間部四技生得認列專業選修學分。","中文",45],["0263","西班牙文(一)",2,"羅琇君","四","9-10","應英系不得選讀","西班牙文",60],["0264","重量訓練",2,"林晉德、陳奎文","三","6-7 S-201","本課程可抵綜合領域","中文",40],["0265","越南語與文化",2,"陳紅鸞","五","3-4","限非越南生。","越南文",60],["0267","韓文(一)",2,"黃珍良","三","3-4","","韓文",60],["0268","韓文(一)",2,"黃珍良","四","3-4","","韓文",60],["0269","韓文(一)",2,"黃珍良","五","3-4","","韓文",60],["0270","韓文(二)",2,"黃珍良","一","8-9","須修過韓文(一)或具基礎(至語中登記)方可選讀目的性培訓課程，初選限三四年級。","韓文",60],["0271","設計‧文創英文",2,"高慧君","四","3-4","","英文",45],["0273","新聞英語聽講",2,"吳佳林","二","1-2","應英系不得選讀；全英文授課","英文",45],
+      ["0274","創業實務(一)",3,"劉素娟","四","2-4 T2-316","","中文",50],["0275","英文商業個案分析",2,"林雅文","一","8-9","應英系不得選讀","英文",45],["0276","職考英文",2,"劉窕娟","五","3-4","","中文",60],["0277","航空菁英英文",2,"黃麗雯","一","9-10","不開放選課，此為航機系一年級必修課程。","英文",60],["0278","航空菁英英文",2,"黃麗雯","三","9-10","不開放選課，此為航機系一年級必修課程。","英文",60],["0279","跨文化溝通",2,"雷多聞","三","3-4","全英文授課","英文",45],["0280","霧峰釆丰",2,"吳東明","五","3-4","本課程可抵人文領域","中文",60],["0281","新詩寫作與創意思考",2,"吳東晟","五","1-2","本課程可抵人文領域","中文",60],["0282","印尼語與文化",2,"楊雅娜","一","6-7","限非印尼生。","印尼文",60],["0283","全民國防",1,"高儷菁","三","2","修習本課程合格者，可申請兵役役期天數折抵","中文",60],
+      ["0284","全民國防",1,"高儷菁","三","3","修習本課程合格者，可申請兵役役期天數折抵","中文",60],["0285","良好健康與福祉：跨域的理解",2,"陳中龍、劉麗薇、李亭儀、廖雅芳","三","8-9","","中文",60],["0286","性別平等的促進：跨域的理解",2,"陳中龍、劉麗薇","四","6-7","","中文",60],["0287","跨領域˙英語力",2,"徐惠萍","三","6-7","","英文",45],["0288","航空職場英文",2,"邱幸珍","四","9-10","不開放選課，此為航機系二年級必修課程。","英文",60],["0289","航空職場英文",2,"陳振源","四","9-10","不開放選課，此為航機系二年級必修課程。","英文",60],["0290","空運菁英英語",2,"凃秀蓮","一","1-2","不開放選課，此為空運系一年級必修課程。","英文",60],["0291","空運菁英英語",2,"凃秀蓮","四","1-2","不開放選課，此為空運系一年級必修課程。","英文",60],["0292","媒體社會影響力",2,"王藍瑩","四","8-9","本課程可抵綜合領域","中文",60],["0293","空運職場英語",2,"李紹毓","二","3-4","不開放選課，此為空運系二年級必修課程。","英文",60],
+      ["0294","國防政策",1,"程政瑋","四","7","修習本課程合格者，可申請兵役役期天數折抵","中文",60],["0295","國防政策",1,"程政瑋","四","8","修習本課程合格者，可申請兵役役期天數折抵","中文",60],["0296","國際華語入門級",2,"饒淑惠","五","3-4","限母語為非華語者，母語為華語者不得選修","華語",45],["0297","國際華語現代生活面面觀",2,"楊佩梅","四","3-4","限母語為非華語者，母語為華語者不得選修","中文",45],["0298","職場高「財」生的寫作課",2,"卓素絹","三","6-7","本課程可抵人文領域","中文",60],["0299","地方文化與導覽敘事",2,"林宗德","四","3-4","本課程可抵綜合領域","中文",60],["0300","愛情行不行：親密關係與性別平權",2,"曹俊德","四","6-7","本課程可抵綜合領域","中文",60],["0301","快樂行不行：情緒管理與壓力調適",2,"曹俊德","四","8-9","本課程可抵綜合領域","中文",60],["0302","友善包容的社區提案",2,"張有恒","五","3-4","本課程可抵社會領域","中文",60],["0303","貧窮線下的社會實踐",2,"張有恒","五","1-2","本課程可抵社會領域","中文",60],["0304","TRX懸吊訓練",2,"林廣聞","四","8-9","本課程可抵綜合領域","中文",45],["0305","農安行動與社區實踐",2,"錢偉鈞","二","6-7","本課程可抵自然領域","中文",60]
+    ];
+    const laborRows = [["1008","三","6","詹雯雅"],["1115","一","10","楊逸成"],["1141","五","1","施明仁"],["1202","五","2","施明仁"],["1282","四","10","辛雲光"],["1297","四","6","辛雲光"],["1349","二","1","李銘純"],["1358","三","1","施明仁"],["1411","二","2","李銘純"],["1552","一","2","林鈺雯"],["1589","四","1","張有恒"],["1657","一","1","楊逸成"],["1747","二","6","詹雯雅"],["1895","一","1","林鈺雯"],["1943","一","6","吳鴻銘"],["1995","四","2","陳麗昭"],["2232","三","2","施明仁"],["2283","二","10","陳麗昭"],["2428","二","6","吳鴻銘"],["2563","三","10","張有恒"]];
+
+    const dayNames = ["一", "二", "三", "四", "五", "六", "日"];
+    const requiredRows = [["校訂必修｜核心通識｜大二英文","0101","職場英文","必修",2,"張昭儀","一","3-4","英文分級：基礎級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0102","職場英文","必修",2,"謝沛諭","一","3-4","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0103","職場英文","必修",2,"吳采玲","一","3-4","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0104","職場英文","必修",2,"蘇若水","一","3-4","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0105","職場英文","必修",2,"陳數紅","一","3-4","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0106","職場英文","必修",2,"吳佳林","一","3-4","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0107","職場英文","必修",2,"蘇綉惠","一","3-4 T1-305","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0108","職場英文","必修",2,"胡文綺","一","3-4","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0109","職場英文","必修",2,"張昭儀","一","6-7","英文分級：基礎級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0110","職場英文","必修",2,"謝沛諭","一","6-7","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0111","職場英文","必修",2,"吳采玲","一","6-7","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0112","職場英文","必修",2,"李麗玲","一","6-7","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0113","職場英文","必修",2,"陳數紅","一","6-7","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0114","職場英文","必修",2,"蘇若水","一","6-7","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0115","職場英文","必修",2,"林勤敏","一","6-7","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0116","職場英文","必修",2,"何瑞蓮","一","6-7","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0117","職場英文","必修",2,"黃麗雯","一","6-7","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0118","職場英文","必修",2,"陳婉青","一","6-7 T2-115","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0119","職場英文","必修",2,"蘇綉惠","一","6-7 T1-305","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0120","職場英文","必修",2,"黃慧如","一","6-7","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0121","職場英文","必修",2,"楊燕菁","一","6-7 D-205","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0122","職場英文","必修",2,"刁瑋婕","三","1-2 D-205","英文分級：基礎級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0123","職場英文","必修",2,"宋思煌","三","1-2","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0124","職場英文","必修",2,"游曙吏","三","1-2","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0125","職場英文","必修",2,"徐惠萍","三","1-2","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0126","職場英文","必修",2,"白浩廷","三","1-2","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0127","職場英文","必修",2,"陳秀雯","三","1-2","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0128","職場英文","必修",2,"潘佳幸","三","1-2","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0129","職場英文","必修",2,"吳佳林","三","1-2","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0130","職場英文","必修",2,"雷多聞","三","1-2","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0131","職場英文","必修",2,"陳美君","四","1-2","英文分級：基礎級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0132","職場英文","必修",2,"黃惠瑜","四","1-2","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0133","職場英文","必修",2,"余孝恆","四","1-2","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0134","職場英文","必修",2,"林靜美","四","1-2","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0135","職場英文","必修",2,"李麗玲","四","1-2","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0136","職場英文","必修",2,"何函霓","四","1-2","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0137","職場英文","必修",2,"潘佳幸","四","1-2","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0138","職場英文","必修",2,"林佑容","四","1-2","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0139","職場英文","必修",2,"陳婉青","四","1-2 D-205","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0140","職場英文","必修",2,"黃慧如","四","1-2","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0141","職場英文","必修",2,"高慧君","四","1-2","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0142","職場英文","必修",2,"陳美君","四","3-4","英文分級：基礎級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0143","職場英文","必修",2,"黃惠瑜","四","3-4","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0144","職場英文","必修",2,"林靜美","四","3-4","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0145","職場英文","必修",2,"余孝恆","四","3-4","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0146","職場英文","必修",2,"林雅文","四","3-4 D-205","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0147","職場英文","必修",2,"李紹毓","四","3-4","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0148","職場英文","必修",2,"林佑容","四","3-4","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0149","職場英文","必修",2,"何函霓","四","3-4","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0150","職場英文","必修",2,"凃秀蓮","四","3-4","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0151","職場英文","必修",2,"王靖雯","四","3-4 T1-305","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0152","職場英文","必修",2,"廖秀芬","五","3-4","英文分級：基礎級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0153","職場英文","必修",2,"劉純秀","五","3-4","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0154","職場英文","必修",2,"鄭巧莉","五","3-4","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0155","職場英文","必修",2,"高慧君","五","3-4","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0156","職場英文","必修",2,"李宜容","五","3-4","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0157","職場英文","必修",2,"鄧廣袤","五","3-4","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0158","職場英文","必修",2,"陳昉","五","3-4","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0159","職場英文","必修",2,"廖苑君","五","3-4","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0160","職場英文","必修",2,"黃麗雯","五","3-4","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0161","職場英文","必修",2,"胡文綺","五","3-4 D-205","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0162","職場英文","必修",2,"曾宜文","五","3-4","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0163","職場英文","必修",2,"刁瑋婕","五","3-4 T1-305","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0164","職場英文","必修",2,"黃芝華","二","1-2","英文分級：初級，限企管系D班、行銷系C班、行銷系D班、工管系C班、資管系D班修讀。","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0165","職場英文","必修",2,"刁瑋婕","二","1-2 D-205","英文分級：初級，限企管系D班、行銷系C班、行銷系D班、工管系C班、資管系D班修讀。","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0166","職場英文","必修",2,"李紹毓","二","1-2","英文分級：中級，限企管系D班、行銷系C班、行銷系D班、工管系C班、資管系D班修讀。","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大二英文","0167","職場英文","必修",2,"雷多聞","一","3-4 D-205","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0168","生活英文","必修",2,"王靖雯","一","8-9 T1-305","英文分級：基礎級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0169","生活英文","必修",2,"張昭儀","一","8-9","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0170","生活英文","必修",2,"陳數紅","一","8-9","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0171","生活英文","必修",2,"李麗玲","一","8-9","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0172","生活英文","必修",2,"李紹毓","一","8-9","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0173","生活英文","必修",2,"吳采玲","一","8-9","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0174","生活英文","必修",2,"黃慧如","一","8-9","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0175","生活英文","必修",2,"何瑞蓮","一","8-9","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0176","生活英文","必修",2,"林子鈺","一","8-9","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0177","生活英文","必修",2,"林勤敏","一","8-9","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0178","生活英文","必修",2,"陳玲瑛","一","8-9","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0179","生活英文","必修",2,"蘇若水","一","8-9","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0180","生活英文","必修",2,"刁瑋婕","一","8-9 D-205","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0181","生活英文","必修",2,"王靖雯","二","3-4 T1-305","英文分級：基礎級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0182","生活英文","必修",2,"黃芝華","二","3-4","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0183","生活英文","必修",2,"吳佳林","二","3-4","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0184","生活英文","必修",2,"鄧廣袤","二","3-4","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0185","生活英文","必修",2,"凃秀蓮","二","3-4","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0186","生活英文","必修",2,"宋思煌","三","3-4","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0187","生活英文","必修",2,"胡文綺","二","3-4","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0188","生活英文","必修",2,"陳婉青","二","3-4 T2-115","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0189","生活英文","必修",2,"楊燕菁","二","3-4","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0190","生活英文","必修",2,"雷多聞","二","3-4","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0191","生活英文","必修",2,"刁瑋婕","二","3-4 D-205","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0192","生活英文","必修",2,"潘佳幸","二","3-4","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0193","生活英文","必修",2,"林雅文","二","3-4","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0194","生活英文","必修",2,"游曙吏","三","3-4","英文分級：基礎級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0195","生活英文","必修",2,"徐惠萍","三","3-4","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0196","生活英文","必修",2,"白浩廷","三","3-4","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0197","生活英文","必修",2,"李紹毓","三","3-4","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0198","生活英文","必修",2,"凃秀蓮","三","3-4","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0199","生活英文","必修",2,"陳婉青","三","3-4 T2-115","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0200","生活英文","必修",2,"楊燕菁","三","3-4","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0201","生活英文","必修",2,"林雅文","三","3-4 D-205","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0202","生活英文","必修",2,"游曙吏","四","6-7","英文分級：基礎級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0203","生活英文","必修",2,"楊秀慧","四","6-7","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0204","生活英文","必修",2,"陳振源","四","6-7","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0205","生活英文","必修",2,"陳美君","四","6-7","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0206","生活英文","必修",2,"邱幸珍","四","6-7","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0207","生活英文","必修",2,"林佑容","四","6-7","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0208","生活英文","必修",2,"何瑞蓮","四","6-7","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0209","生活英文","必修",2,"黃麗雯","四","6-7","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0210","生活英文","必修",2,"雷多聞","四","6-7","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0211","生活英文","必修",2,"潘佳幸","四","6-7 D-205","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0212","生活英文","必修",2,"林靜美","四","6-7 T1-305","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0213","生活英文","必修",2,"楊燕菁","四","6-7","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0214","生活英文","必修",2,"廖苑君","五","1-2","英文分級：基礎級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0215","生活英文","必修",2,"劉純秀","五","1-2","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0216","生活英文","必修",2,"鄭巧莉","五","1-2","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0217","生活英文","必修",2,"曾宜文","五","1-2","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0218","生活英文","必修",2,"吳佳林","五","1-2","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0219","生活英文","必修",2,"廖秀芬","五","1-2","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0220","生活英文","必修",2,"謝佳穎","五","1-2","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0221","生活英文","必修",2,"陳昉","五","1-2","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0222","生活英文","必修",2,"胡文綺","五","1-2 D-205","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0223","生活英文","必修",2,"王靖雯","五","1-2 T1-305","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0224","生活英文","必修",2,"廖苑君","五","6-7","英文分級：基礎級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0225","生活英文","必修",2,"劉純秀","五","6-7","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0226","生活英文","必修",2,"曾宜文","五","6-7","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0227","生活英文","必修",2,"鄭巧莉","五","6-7","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0228","生活英文","必修",2,"鄧廣袤","五","6-7","英文分級：初級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0229","生活英文","必修",2,"李宜容","五","6-7","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0230","生活英文","必修",2,"廖秀芬","五","6-7","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0231","生活英文","必修",2,"陳昉","五","6-7","英文分級：中級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0232","生活英文","必修",2,"吳佳林","五","6-7","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0233","生活英文","必修",2,"白浩廷","三","6-7","英文分級：初級，行銷系(春)1D、行銷系(春)1E、工管系(春)1C修讀。","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0234","生活英文","必修",2,"謝佳穎","三","6-7","英文分級：初級，行銷系(春)1D、行銷系(春)1E、工管系(春)1C修讀。","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0235","生活英文","必修",2,"宋思煌","三","6-7","英文分級：中級，行銷系(春)1D、行銷系(春)1E、工管系(春)1C修讀。","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0236","生活英文","必修",2,"饒淑惠","四","6-7","英文分級：初級，限企管系1D、行銷系1C、行銷系1D修讀。","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0237","生活英文","必修",2,"余孝恆","四","6-7","英文分級：初級，限企管系1D、行銷系1C、行銷系1D修讀。","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0239","生活英文","必修",2,"陳玲瑛","四","9-10","英文分級：僅限資管系產學攜手合作僑生專班","英文","45","校訂必修(四日)"],["校訂必修｜核心通識｜大一英文","0240","生活英文","必修",2,"胡文綺","三","3-4","英文分級：中高級","英文","45","校訂必修(四日)"],["校訂必修｜基礎通識","1001","中文鑑賞與應用","必修",2,"林家宏","五","1-2","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1004","體育(體適能)","必修",2,"張維志","二","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1015","中文鑑賞與應用","必修",2,"黃翠芬","二","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1018","體育(體適能)","必修",2,"李亭儀","二","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1025","中文鑑賞與應用","必修",2,"張俐雯","二","3-4 T1-201","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1028","體育(體適能)","必修",2,"魏宏凱","二","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1109","中文鑑賞與應用","必修",2,"洪至璋","三","1-2","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1113","體育(體適能)","必修",2,"楊雅琪","五","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1122","中文鑑賞與應用","必修",2,"楊靜芬","三","1-2","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1126","體育(體適能)","必修",2,"鄒智盛","五","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1129","中文鑑賞與應用","必修",2,"林政言","三","1-2","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1132","體育(體適能)","必修",2,"邱崇恩","五","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1135","中文鑑賞與應用","必修",2,"黃致遠","五","6-7","","中文","45","校訂必修(四日)"],["校訂必修｜基礎通識","1139","體育(體適能)","必修",2,"林晉德","一","8-9","全英文授課(歡迎本國學生及外籍學生修課)","英文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1200","體育(體適能)","必修",2,"蕭敬霖","三","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1209","體育(體適能)","必修",2,"許弘恩","三","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1280","體育(體適能)","必修",2,"許吉越\n林祐陞","三","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1281","資通訊與AI應用","必修",2,"徐暐勛","五","1-2","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1296","體育(體適能)","必修",2,"楊雅琪","五","1-2","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1307","體育(體適能)","必修",2,"鄒智盛","五","1-2","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1347","體育(體適能)","必修",2,"許吉越","四","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1357","體育(體適能)","必修",2,"邱睿昶","四","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1408","體育(體適能)","必修",2,"林姵君","五","3-4","限國際產學專班學生修課","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1409","華語文能力測驗","必修",2,"黃致遠","二","6-7","限休閒系國際產學專班修習","華語","45","校訂必修(四日)"],["校訂必修｜基礎通識","1410","華語(二)","必修",3,"何冠瑜\n簡伶潔\n邱永祺","二","3-4","僅限產專班修習","華語","45","校訂必修(四日)"],["校訂必修｜基礎通識","1442","中文鑑賞與應用","必修",2,"張俐雯","二","1-2 T1-201","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1446","體育(體適能)","必修",2,"柯文益","四","1-2","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1447","資通訊與AI應用","必修",2,"廖淑瑩","五","1-2 T2-505","","中文","52","校訂必修(四日)"],["校訂必修｜基礎通識","1452","中文鑑賞與應用","必修",2,"楊靜芬","三","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1456","體育(體適能)","必修",2,"黃棕瀚","四","1-2","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1457","中文鑑賞與應用","必修",2,"楊佩梅","一","8-9","","中文","45","校訂必修(四日)"],["校訂必修｜基礎通識","1461","體育(體適能)","必修",2,"邱睿昶\n賴俊安","一","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1462","資通訊與AI應用","必修",2,"廖國健","四","8-9 L-503","","中文","52","校訂必修(四日)"],["校訂必修｜基礎通識","1515","體育(體適能)","必修",2,"李亭儀","一","3-4","限國際產學專班學生修課","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1516","華語文能力測驗","必修",2,"林婕雯","一","1-2,6-7","限行銷系國際產學專班修習","華語","45","校訂必修(四日)"],["校訂必修｜基礎通識","1517","華語(二)","必修",3,"黃昕婷","三","6-8","僅限國際產學專班修習","華語","45","校訂必修(四日)"],["校訂必修｜基礎通識","1522","華語(四)","必修",4,"楊佩梅\n邱永祺","四","9-10","限行銷系國際產學專班修習","華語","45","校訂必修(四日)"],["校訂必修｜基礎通識","1550","體育(體適能)","必修",2,"楊仁仁\n賴俊安","三","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1556","體育(體適能)","必修",2,"張婷翔","三","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1570","體育(體適能)","必修",2,"李亭儀","三","3-4","限國際產學專班學生修課","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1573","華語(三)","必修",4,"陳詩瑩\n黃昕婷","一","2-3","限行銷系國際產學專班修習","華語","45","校訂必修(四日)"],["校訂必修｜基礎通識","1651","中文鑑賞與應用","必修",2,"林家宏","一","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1654","體育(體適能)","必修",2,"胡長豪","三","8-9","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1656","資通訊與AI應用","必修",2,"熊杏華","三","3-4 G-610","","中文","52","校訂必修(四日)"],["校訂必修｜基礎通識","1660","中文鑑賞與應用","必修",2,"黃翠芬","一","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1663","體育(體適能)","必修",2,"林晉德\n陳奎文","三","8-9","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1665","資通訊與AI應用","必修",2,"廖國健","三","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1713","校園生存華語","必修",4,"邱永祺\n饒淑惠","三","1-2","限營建系新型專班修習","華語","45","校訂必修(四日)"],["校訂必修｜基礎通識","1714","華語(一)","必修",6,"黃致遠\n楊佩梅","一","2-4 E-4A","僅限營建系新型專班使用","華語","45","校訂必修(四日)"],["校訂必修｜基礎通識","1727","華語文能力測驗","必修",2,"饒淑惠","三","3-4","限營建系新型專班修習","華語","45","校訂必修(四日)"],["校訂必修｜基礎通識","1728","華語(二)","必修",4,"黃昕婷","二","6-7","限營建系新型專班修習","華語","45","校訂必修(四日)"],["校訂必修｜基礎通識","1740","中文鑑賞與應用","必修",2,"王詩惠","五","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1743","體育(體適能)","必修",2,"邱睿昶\n賴俊安","四","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1746","資通訊與AI應用","必修",2,"徐暐勛","三","8-9 E-510","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1750","中文鑑賞與應用","必修",2,"吳東晟","五","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1753","體育(體適能)","必修",2,"黃棕瀚","四","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1756","資通訊與AI應用","必修",2,"劉定焜","一","3-4 E-620","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1800","體育(體適能)","必修",2,"黃棕瀚","三","3-4","限國際產學專班學生修課","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1802","華語(三)","必修",4,"何冠瑜\n簡伶潔","二","6-7","限工管系國際產學專班修習","華語","45","校訂必修(四日)"],["校訂必修｜基礎通識","1818","體育(體適能)","必修",2,"魏宏凱","二","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1853","中文鑑賞與應用","必修",2,"彭婉蕙","四","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1857","體育(體適能)","必修",2,"許吉越","一","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1859","資通訊與AI應用","必修",2,"林翠婷","五","6-7 L-503","","中文","52","校訂必修(四日)"],["校訂必修｜基礎通識","1891","體育(體適能)","必修",2,"邱崇恩","五","6-7","限國際產學專班學生修課","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1892","華語文能力測驗","必修",2,"楊佩梅\n何冠瑜","二","1-2","限應化系國際產學專班修習","華語","45","校訂必修(四日)"],["校訂必修｜基礎通識","1893","華語(二)","必修",3,"邱永祺","一","2-4","限應化系國際產學專班修習","華語","45","校訂必修(四日)"],["校訂必修｜基礎通識","1899","華語(四)","必修",4,"林婕雯\n饒淑惠","一","3-4","限應化系國際產學專班修習","華語","45","校訂必修(四日)"],["校訂必修｜基礎通識","1914","華語文寫作技巧","必修",2,"陳詩瑩","五","3-4","限應化系國際產學專班","華語","45","校訂必修(四日)"],["校訂必修｜基礎通識","1915","科技華語","必修",2,"陳詩瑩","五","1-2 G-610","限國際產學專班(應化系)修習","華語","45","校訂必修(四日)"],["校訂必修｜基礎通識","1937","中文鑑賞與應用","必修",2,"洪至璋","三","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1941","體育(體適能)","必修",2,"林姵君","五","1-2","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1942","資通訊與AI應用","必修",2,"林啟裕","二","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1946","中文鑑賞與應用","必修",2,"楊靜芬","三","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1950","體育(體適能)","必修",2,"邱崇恩","五","1-2","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1951","資通訊與AI應用","必修",2,"陳志宗","二","6-7 G-610","","中文","52","校訂必修(四日)"],["校訂必修｜基礎通識","1991","中文鑑賞與應用","必修",2,"黃翠芬","二","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1994","體育(體適能)","必修",2,"楊仁仁","四","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","1999","中文鑑賞與應用","必修",2,"蘇哲儀","二","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2002","體育(體適能)","必修",2,"柯文益","四","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2054","中文鑑賞與應用","必修",2,"張俐雯","一","3-4 T1-201","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2060","體育(體適能)","必修",2,"周明修","一","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2063","資通訊與AI應用","必修",2,"林啟裕","四","1-2","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2067","中文鑑賞與應用","必修",2,"林政言","一","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2073","體育(體適能)","必修",2,"林祐陞\n賴俊安","一","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2076","資通訊與AI應用","必修",2,"黃敦煌","四","3-4 G-509","","中文","52","校訂必修(四日)"],["校訂必修｜基礎通識","2146","中文鑑賞與應用","必修",2,"林政言","一","1-2","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2153","體育(體適能)","必修",2,"林晉德","一","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2154","資通訊與AI應用","必修",2,"蕭宏州","五","1-2","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2158","中文鑑賞與應用","必修",2,"王詩惠","一","1-2","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2165","體育(體適能)","必修",2,"李亭儀","一","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2168","資通訊與AI應用","必修",2,"林永設","一","3-4 D-310","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2225","中文鑑賞與應用","必修",2,"彭婉蕙","四","1-2","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2229","體育(體適能)","必修",2,"張維志","二","1-2","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2231","資通訊與AI應用","必修",2,"王若蓮","三","6-7 G-610","","中文","48","校訂必修(四日)"],["校訂必修｜基礎通識","2235","中文鑑賞與應用","必修",2,"劉福田","四","1-2","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2238","體育(體適能)","必修",2,"魏宏凱","二","1-2","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2240","資通訊與AI應用","必修",2,"林啟裕","三","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2279","體育(體適能)","必修",2,"李亭儀","四","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2282","資通訊與AI應用","必修",2,"賴俊良","四","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2288","體育(體適能)","必修",2,"辛雲光","四","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2291","資通訊與AI應用","必修",2,"蕭宏州","四","8-9","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2348","體育(體適能)","必修",2,"林晉德","二","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2351","資通訊與AI應用","必修",2,"廖國健","三","1-2 G-314","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2363","體育(體適能)","必修",2,"楊雅琪","二","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2366","資通訊與AI應用","必修",2,"洪英訓","三","8-9 G-610","","中文","52","校訂必修(四日)"],["校訂必修｜基礎通識","2424","體育(體適能)","必修",2,"胡長豪","三","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2427","資通訊與AI應用","必修",2,"林永設","一","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2437","體育(體適能)","必修",2,"黃俊傑","三","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2440","資通訊與AI應用","必修",2,"熊杏華","一","6-7 G-610","","中文","52","校訂必修(四日)"],["校訂必修｜基礎通識","2499","體育(體適能)","必修",2,"黃俊傑","一","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2501","資通訊與AI應用","必修",2,"黃敦煌","一","8-9","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2509","體育(體適能)","必修",2,"張婷翔","一","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2511","資通訊與AI應用","必修",2,"陳惠玲","一","8-9 T2-506","","中文","53","校訂必修(四日)"],["校訂必修｜基礎通識","2561","體育(體適能)","必修",2,"黃俊傑","一","8-9","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2572","體育(體適能)","必修",2,"胡長豪","一","8-9","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2580","體育(體適能)","必修",2,"張婷翔","一","8-9","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2673","體育(體適能)","必修",2,"林晉德","四","7-8","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2688","體育(體適能)","必修",2,"林祐陞","一","8-9","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2694","體育(體適能)","必修",2,"林姵君","一","8-9","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2761","體育(體適能)","必修",2,"張維志","二","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2769","體育(體適能)","必修",2,"林祐陞","二","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2830","中文鑑賞與應用","必修",2,"張俐雯","四","1-2 T1-201","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2832","體育(體適能)","必修",2,"李亭儀","二","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2836","資通訊與AI應用","必修",2,"魏季宏","四","6-7 T2-505","","中文","52","校訂必修(四日)"],["校訂必修｜基礎通識","2842","中文鑑賞與應用","必修",2,"張俐雯","四","3-4 T1-201","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2844","體育(體適能)","必修",2,"邱睿昶\n賴俊安","二","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2847","資通訊與AI應用","必修",2,"黃文聰","四","6-7 G-509","","中文","52","校訂必修(四日)"],["校訂必修｜基礎通識","2885","體育(體適能)","必修",2,"許弘恩","三","8-9","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2888","資通訊與AI應用","必修",2,"魏季宏","四","8-9","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2895","體育(體適能)","必修",2,"蕭敬霖","三","8-9","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2898","資通訊與AI應用","必修",2,"吳榮展","四","8-9","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2947","中文鑑賞與應用","必修",2,"彭婉蕙","四","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2950","體育(體適能)","必修",2,"湯顯賀","五","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2952","資通訊與AI應用","必修",2,"魏季宏","四","1-2 V-206","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2957","中文鑑賞與應用","必修",2,"劉福田","四","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2960","體育(體適能)","必修",2,"許富景","五","3-4","","中文","60","校訂必修(四日)"],["校訂必修｜基礎通識","2962","資通訊與AI應用","必修",2,"蕭宏州","五","6-7","","中文","60","校訂必修(四日)"],["校訂必修｜核心通識｜人文領域","0001","中國婦女史","選擇必修",2,"郭佳玲","二","6-7","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","60","人文領域"],["校訂必修｜核心通識｜人文領域","0002","古典音樂欣賞","選擇必修",2,"莊舜旭","三","1-2 T1-206","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","80","人文領域"],["校訂必修｜核心通識｜人文領域","0003","古典音樂欣賞","選擇必修",2,"莊舜旭","三","3-4 T1-206","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","80","人文領域"],["校訂必修｜核心通識｜人文領域","0004","台灣歷史與文化","選擇必修",2,"陳中龍","四","3-4","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","60","人文領域"],["校訂必修｜核心通識｜人文領域","0005","哲學故事與人生","選擇必修",2,"劉振維","一","3-4","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","60","人文領域"],["校訂必修｜核心通識｜人文領域","0006","哲學故事與人生","選擇必修",2,"劉振維","二","1-2","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","60","人文領域"],["校訂必修｜核心通識｜人文領域","0007","歌劇欣賞","選擇必修",2,"莊舜旭","二","3-4 T1-206","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","80","人文領域"],["校訂必修｜核心通識｜人文領域","0008","歌劇欣賞","選擇必修",2,"莊舜旭","二","6-7 T1-206","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","80","人文領域"],["校訂必修｜核心通識｜人文領域","0009","劇場藝術","選擇必修",2,"吳鷰儀","一","6-7 T2-315","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","60","人文領域"],["校訂必修｜核心通識｜人文領域","0010","劇場藝術","選擇必修",2,"吳鷰儀","一","8-9 T2-315","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","60","人文領域"],["校訂必修｜核心通識｜人文領域","0011","民俗與文化","選擇必修",2,"陳中龍","二","3-4","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","60","人文領域"],["校訂必修｜核心通識｜人文領域","0012","民俗與文化","選擇必修",2,"陳中龍","二","6-7","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","60","人文領域"],["校訂必修｜核心通識｜人文領域","0013","世界文明通論","選擇必修",2,"張淑惠","三","1-2","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","60","人文領域"],["校訂必修｜核心通識｜人文領域","0014","歷史人物與典範","選擇必修",2,"郭佳玲","二","1-2","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","60","人文領域"],["校訂必修｜核心通識｜人文領域","0015","歷史人物與典範","選擇必修",2,"郭佳玲","二","3-4","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","60","人文領域"],["校訂必修｜核心通識｜人文領域","0016","電影與生命教育","選擇必修",2,"王許炎初","一","3-4","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","60","人文領域"],["校訂必修｜核心通識｜人文領域","0017","電影與生命教育","選擇必修",2,"王許炎初","一","6-7","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","60","人文領域"],["校訂必修｜核心通識｜人文領域","0018","東亞文明與智慧","選擇必修",2,"馮典章","四","3-4","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","60","人文領域"],["校訂必修｜核心通識｜人文領域","0019","紙的文化與創意","選擇必修",2,"林政言","二","1-2 T1-303","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","43","人文領域"],["校訂必修｜核心通識｜人文領域","0020","紙的文化與創意","選擇必修",2,"林政言","二","3-4 T1-303","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","43","人文領域"],["校訂必修｜核心通識｜人文領域","0021","紙的文化與創意","選擇必修",2,"林政言","二","6-7 T1-303","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","43","人文領域"],["校訂必修｜核心通識｜人文領域","0022","爵士音樂賞析","選擇必修",2,"詹以行","一","3-4 T1-207","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","70","人文領域"],["校訂必修｜核心通識｜人文領域","0023","爵士音樂賞析","選擇必修",2,"詹以行","一","6-7 T1-207","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","70","人文領域"],["校訂必修｜核心通識｜人文領域","0024","霧峰釆丰","選擇必修",2,"邱正畧","一","8-9","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","60","人文領域"],["校訂必修｜核心通識｜人文領域","0025","霧峰釆丰","選擇必修",2,"邱正畧","二","1-2","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","60","人文領域"],["校訂必修｜核心通識｜人文領域","0026","論語故事","選擇必修",2,"劉振維","一","6-7","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","60","人文領域"],["校訂必修｜核心通識｜人文領域","0027","論語故事","選擇必修",2,"劉振維","二","6-7","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","60","人文領域"],["校訂必修｜核心通識｜人文領域","0028","論語故事","選擇必修",2,"劉振維","三","1-2","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","60","人文領域"],["校訂必修｜核心通識｜人文領域","0029","職場文書寫作","選擇必修",2,"黃翠芬","三","3-4","四年制人文領域(可替代「藝術課群」、「人文與藝術課群」、「藝文涵養課群」、「藝文與生活課群」、「涵養課群」、「人文課群」、「歷史與哲學課群」課程)","中文","60","人文領域"],["校訂必修｜核心通識｜社會領域","0030","中華民國憲法","選擇必修",2,"廖顯謨","一","8-9","四年制社會領域(可替代「法政與社會課群」、「社會課群」、「心理與自我成長課群」課程)","中文","60","社會領域"],["校訂必修｜核心通識｜社會領域","0031","中華民國憲法","選擇必修",2,"廖顯謨","二","6-7","四年制社會領域(可替代「法政與社會課群」、「社會課群」、「心理與自我成長課群」課程)","中文","60","社會領域"],["校訂必修｜核心通識｜社會領域","0032","兩岸關係與大陸政策","選擇必修",2,"廖顯謨","一","6-7","四年制社會領域(可替代「法政與社會課群」、「社會課群」、「心理與自我成長課群」課程)","中文","60","社會領域"],["校訂必修｜核心通識｜社會領域","0033","兩岸關係與大陸政策","選擇必修",2,"廖顯謨","三","1-2","四年制社會領域(可替代「法政與社會課群」、「社會課群」、「心理與自我成長課群」課程)","中文","60","社會領域"],["校訂必修｜核心通識｜社會領域","0034","法律與生活","選擇必修",2,"陳銘釗","五","1-2","四年制社會領域(可替代「法政與社會課群」、「社會課群」、「心理與自我成長課群」課程)","中文","60","社會領域"],["校訂必修｜核心通識｜社會領域","0035","社區營造與文化生態","選擇必修",2,"陳茂祥","一","6-7","四年制社會領域(可替代「法政與社會課群」、「社會課群」、「心理與自我成長課群」課程)","中文","60","社會領域"],["校訂必修｜核心通識｜社會領域","0036","智慧財產權","選擇必修",2,"莊正儀","五","1-2","四年制社會領域(可替代「法政與社會課群」、「社會課群」、「心理與自我成長課群」課程)","中文","60","社會領域"],["校訂必修｜核心通識｜社會領域","0037","霧峰學","選擇必修",2,"陳茂祥","一","3-4","限國際產學專班學生修課","中文","60","社會領域"],["校訂必修｜核心通識｜社會領域","0038","智慧財產權","選擇必修",2,"莊正儀","五","3-4","四年制社會領域(可替代「法政與社會課群」、「社會課群」、「心理與自我成長課群」課程)","中文","60","社會領域"],["校訂必修｜核心通識｜社會領域","0039","泰國文化","選擇必修",2,"楊彩敏","二","3-4","四年制社會領域(可替代「法政與社會課群」、「社會課群」、「心理與自我成長課群」課程)","中文","60","社會領域"],["校訂必修｜核心通識｜社會領域","0040","泰國文化","選擇必修",2,"楊彩敏","二","6-7","四年制社會領域(可替代「法政與社會課群」、「社會課群」、「心理與自我成長課群」課程)","中文","60","社會領域"],["校訂必修｜核心通識｜社會領域","0041","泰國文化","選擇必修",2,"楊彩敏","五","1-2","四年制社會領域(可替代「法政與社會課群」、「社會課群」、「心理與自我成長課群」課程)","中文","60","社會領域"],["校訂必修｜核心通識｜社會領域","0042","泰國文化","選擇必修",2,"楊彩敏","三","1-2","限國際產學專班學生修課","中文","60","社會領域"],["校訂必修｜核心通識｜社會領域","0043","東南亞華人與社會","選擇必修",2,"楊彩敏","五","3-4","四年制社會領域(可替代「法政與社會課群」、「社會課群」、「心理與自我成長課群」課程)","中文","60","社會領域"],["校訂必修｜核心通識｜社會領域","0044","東南亞華人與社會","選擇必修",2,"饒淑惠","三","6-7","限資管系及企管系英語專班修習","英文","45","社會領域"],["校訂必修｜核心通識｜自然科學領域","0045","環境與生態","選擇必修",2,"林國清","一","6-7","四年制自然科學領域(可替代「環境與科技課群」、「自然與科技發展課群」、「自然課群」課程)","中文","60","自然科學領域"],["校訂必修｜核心通識｜自然科學領域","0046","醫學與生活","選擇必修",2,"吳三源","一","6-7","四年制自然科學領域(可替代「環境與科技課群」、「自然與科技發展課群」、「自然課群」課程)","中文","60","自然科學領域"],["校訂必修｜核心通識｜自然科學領域","0047","化學與生活","選擇必修",2,"林維莉","一","3-4","四年制自然科學領域(可替代「環境與科技課群」、「自然與科技發展課群」、「自然課群」課程)","中文","60","自然科學領域"],["校訂必修｜核心通識｜自然科學領域","0048","化學與生活","選擇必修",2,"陳政男","三","3-4","四年制自然科學領域(可替代「環境與科技課群」、「自然與科技發展課群」、「自然課群」課程)","中文","60","自然科學領域"],["校訂必修｜核心通識｜自然科學領域","0049","化學與生活","選擇必修",2,"林維莉","四","6-7","四年制自然科學領域(可替代「環境與科技課群」、「自然與科技發展課群」、「自然課群」課程)","中文","60","自然科學領域"],["校訂必修｜核心通識｜自然科學領域","0050","化學與生活","選擇必修",2,"陳政男","三","6-7","全英文上課(本課歡迎本國學生及外國學生選課)，四年制自然科學領域(可替代「環境與科技課群」、「自然與科技發展課群」、「自然課群」課程)","英文","60","自然科學領域"],["校訂必修｜核心通識｜自然科學領域","0051","化學與生活","選擇必修",2,"林維莉","四","3-4","四年制自然科學領域(可替代「環境與科技課群」、「自然與科技發展課群」、「自然課群」課程)","中文","60","自然科學領域"],["校訂必修｜核心通識｜自然科學領域","0052","安全衛生概論","選擇必修",2,"伍耀璋","一","1-2","四年制自然科學領域(可替代「環境與科技課群」、「自然與科技發展課群」、「自然課群」課程)","中文","60","自然科學領域"],["校訂必修｜核心通識｜自然科學領域","0053","防災概論","選擇必修",2,"陳奕中","二","3-4","四年制自然科學領域(可替代「環境與科技課群」、「自然與科技發展課群」、「自然課群」課程)","中文","60","自然科學領域"],["校訂必修｜核心通識｜自然科學領域","0054","物理與生活","選擇必修",2,"徐暐亭","四","3-4 T2-315","四年制自然科學領域(可替代「環境與科技課群」、「自然與科技發展課群」、「自然課群」課程)","中文","60","自然科學領域"],["校訂必修｜核心通識｜自然科學領域","0055","氣候變遷與防災","選擇必修",2,"簡世明","三","8-9","四年制自然科學領域(可替代「環境與科技課群」、「自然與科技發展課群」、「自然課群」課程)","中文","60","自然科學領域"],["校訂必修｜核心通識｜自然科學領域","0056","食品營養與安全","選擇必修",2,"廖雅芳","二","3-4","四年制自然科學領域(可替代「環境與科技課群」、「自然與科技發展課群」、「自然課群」課程)","中文","60","自然科學領域"],["校訂必修｜核心通識｜自然科學領域","0057","食品營養與安全","選擇必修",2,"廖雅芳","三","6-7","四年制自然科學領域(可替代「環境與科技課群」、「自然與科技發展課群」、「自然課群」課程)","中文","60","自然科學領域"],["校訂必修｜核心通識｜自然科學領域","0058","永續水資源開發與管理","選擇必修",2,"林國清","一","3-4","四年制自然科學領域(可替代「環境與科技課群」、「自然與科技發展課群」、「自然課群」課程)","中文","60","自然科學領域"],["校訂必修｜核心通識｜自然科學領域","0059","氣象與太空","選擇必修",2,"曾珮莉","一","8-9","四年制自然科學領域(可替代「環境與科技課群」、「自然與科技發展課群」、「自然課群」課程)","中文","60","自然科學領域"],["校訂必修｜核心通識｜自然科學領域","0060","轉角遇見有機","選擇必修",2,"曾證諺","四","6-7","四年制自然科學領域(可替代「環境與科技課群」、「自然與科技發展課群」、「自然課群」課程)","中文","60","自然科學領域"],["校訂必修｜核心通識｜自然科學領域","0061","永續與淨零轉型","選擇必修",2,"張哲魁","一","8-9","四年制自然科學領域(可替代「環境與科技課群」、「自然與科技發展課群」、「自然課群」課程)","中文","60","自然科學領域"],["校訂必修｜核心通識｜自然科學領域","0062","永續與淨零轉型","選擇必修",2,"翁國仁","三","3-4","四年制自然科學領域(可替代「環境與科技課群」、「自然與科技發展課群」、「自然課群」課程)","中文","60","自然科學領域"],["校訂必修｜核心通識｜綜合領域","0063","有氧舞蹈","選擇必修",2,"蘇郁卿","五","6-7 S-205","限國際產學專班學生修課","中文","40","綜合領域"],["校訂必修｜核心通識｜綜合領域","0064","羽球","選擇必修",2,"林祐陞","四","6-7","四年制綜合領域","中文","50","綜合領域"],["校訂必修｜核心通識｜綜合領域","0065","柔道","選擇必修",2,"柯文益","四","3-4 S-207","四年制綜合領域","中文","40","綜合領域"],["校訂必修｜核心通識｜綜合領域","0066","高爾夫球","選擇必修",2,"楊仁仁","二","3-4","四年制綜合領域","中文","55","綜合領域"],["校訂必修｜核心通識｜綜合領域","0067","瑜珈提斯","選擇必修",2,"李亭儀","四","6-7 S-205","四年制綜合領域","中文","40","綜合領域"],["校訂必修｜核心通識｜綜合領域","0068","重量訓練","選擇必修",2,"林晉德\n陳奎文","三","3-4 S-201","四年制綜合領域","中文","40","綜合領域"],["校訂必修｜核心通識｜綜合領域","0069","運動按摩","選擇必修",2,"郭季源","一","1-2 S-207","限國際產學專班學生修課","中文","40","綜合領域"],["校訂必修｜核心通識｜綜合領域","0070","霧峰在地文化資產","選擇必修",2,"張淑惠","三","6-7","四年制綜合領域","中文","60","綜合領域"],["校訂必修｜核心通識｜綜合領域","0071","霧峰在地文化資產","選擇必修",2,"林宗德","四","1-2","四年制綜合領域","中文","60","綜合領域"],["校訂必修｜核心通識｜綜合領域","0072","霧峰在地文化資產","選擇必修",2,"吳東明","五","1-2","四年制綜合領域","中文","60","綜合領域"],["校訂必修｜核心通識｜綜合領域","0073","霧峰在地文化資產","選擇必修",2,"黃致遠","四","3-4","僅限工管系修習","中文","45","綜合領域"],["校訂必修｜核心通識｜綜合領域","0074","霧峰在地文化資產","選擇必修",2,"黃致遠","二","3-4","四年制綜合領域","英文","45","綜合領域"],["校訂必修｜核心通識｜綜合領域","0075","重量訓練理論與實務","選擇必修",2,"林晉德","四","3-4 S-205","全英文授課(歡迎本國學生及外國學生選課)","英文","40","綜合領域"],["校訂必修｜核心通識｜綜合領域","0076","日本文化概論","選擇必修",2,"賴郁君","三","1-2","四年制綜合領域","中文","60","綜合領域"],["校訂必修｜核心通識｜綜合領域","0077","日本文化概論","選擇必修",2,"馮典章","四","1-2","四年制綜合領域","中文","60","綜合領域"],["校訂必修｜核心通識｜綜合領域","0078","日本文化概論","選擇必修",2,"馮典章","四","6-7","四年制綜合領域","中文","60","綜合領域"],["校訂必修｜核心通識｜綜合領域","0079","日本文化概論","選擇必修",2,"賴郁君","三","3-4","四年制綜合領域","中文","60","綜合領域"],["校訂必修｜核心通識｜綜合領域","0080","在生活中遇見爵士音樂","選擇必修",2,"詹以行","一","8-9 T1-207","四年制綜合領域","中文","70","綜合領域"],["校訂必修｜核心通識｜綜合領域","0081","世界公民與全球議題","選擇必修",2,"蔡翔任","四","6-7","四年制綜合領域","中文","60","綜合領域"],["校訂必修｜核心通識｜綜合領域","0082","世界公民與全球議題","選擇必修",2,"蔡翔任","四","8-9","四年制綜合領域","中文","60","綜合領域"],["校訂必修｜核心通識｜綜合領域","0083","電影與社會議題","選擇必修",2,"蘇哲儀","二","3-4","四年制綜合領域","中文","60","綜合領域"],["校訂必修｜核心通識｜綜合領域","0084","動畫的生命課題","選擇必修",2,"林家宏","五","3-4","四年制綜合領域","中文","60","綜合領域"],["校訂必修｜核心通識｜綜合領域","0085","音樂指南：發現經典與創新","選擇必修",2,"許芳瑛","四","3-4 T1-207","四年制綜合領域","中文","70","綜合領域"],["校訂必修｜核心通識｜綜合領域","0086","台灣節慶與飲食文化","選擇必修",2,"黃昕婷","一","6-7","四年制綜合領域","中文","45","綜合領域"],["校訂必修｜核心通識｜綜合領域","0087","天然著色劑","選擇必修",2,"陳美合","四","6-7 E-206","四年制綜合領域","中文","60","綜合領域"],["校訂必修｜核心通識｜綜合領域","0088","愛情行不行：親密關係與性別平權","選擇必修",2,"劉麗薇","四","8-9","四年制綜合領域","中文","60","綜合領域"],["校訂必修｜核心通識｜綜合領域","0089","快樂行不行：情緒管理與壓力調適","選擇必修",2,"劉麗薇","四","1-2","四年制綜合領域","中文","60","綜合領域"],["校訂必修｜核心通識｜綜合領域","0090","快樂行不行：情緒管理與壓力調適","選擇必修",2,"楊佩梅","三","3-4","四年制綜合領域","中文","45","綜合領域"]];
+    const departmentRows = [["景觀及都市設計系","2225","中文鑑賞與應用","必修",2,"彭婉蕙","四","1-2","","中文","60","景都系四日一A"],["景觀及都市設計系","2226","設計表現法（一）","必修",3,"呂文博","五","1-4 D-821","限本系","中文","70","景都系四日一A"],["景觀及都市設計系","2227","景觀學概論","必修",2,"鍾明孝、王翠霙","四","6-7","限本班","中文","65","景都系四日一A"],["景觀及都市設計系","2228","景觀設計（一）","必修",4,"簡伃貞、陳育榮、許哲瑜、吳志強、蔡佳峻、呂文博、王伯彥、徐秀梅、蘇盈如","一","1-4,6-9 D-821","限本系","中文","130","景都系四日一A"],["景觀及都市設計系","2229","體育(體適能)","必修",2,"張維志","二","1-2","","中文","60","景都系四日一A"],["景觀及都市設計系","2230","景觀植物學（一）","必修",2,"謝維芳","四","3-4","限本班","中文","65","景都系四日一A"],["景觀及都市設計系","2231","資通訊與AI應用","必修",2,"王若蓮","三","6-7 G-610","","中文","48","景都系四日一A"],["景觀及都市設計系","2233","工廠實習","選修",2,"王泰勛","五","8-9 DB-110","本課程需參加9/19（六）全日「115年度新進人員職業安全衛生教育訓練(含通過測驗)」，方可修習；初選限本班；加退選限本系。","中文","50","景都系四日一A"],["景觀及都市設計系","2248","設計概論","選修",2,"鄒佩蘅","五","6-7","技優專班課程，限115學年度入學技優生必選。","中文","40","景都系四日一A"],["景觀及都市設計系","2228","景觀設計（一）","必修",4,"簡伃貞、陳育榮、許哲瑜、吳志強、蔡佳峻、呂文博、王伯彥、徐秀梅、蘇盈如","一","1-4,6-9 D-821","限本系","中文","130","景都系四日一B"],["景觀及都市設計系","2235","中文鑑賞與應用","必修",2,"劉福田","四","1-2","","中文","60","景都系四日一B"],["景觀及都市設計系","2236","設計表現法（一）","必修",3,"鄒佩蘅","五","1-4 D-823","限本系","中文","70","景都系四日一B"],["景觀及都市設計系","2237","景觀學概論","必修",2,"鍾明孝、王翠霙","四","3-4","限本班","中文","65","景都系四日一B"],["景觀及都市設計系","2238","體育(體適能)","必修",2,"魏宏凱","二","1-2","","中文","60","景都系四日一B"],["景觀及都市設計系","2239","景觀植物學（一）","必修",2,"謝維芳","四","6-7","限本班","中文","65","景都系四日一B"],["景觀及都市設計系","2240","資通訊與AI應用","必修",2,"林啟裕","三","6-7","","中文","60","景都系四日一B"],["景觀及都市設計系","2241","工廠實習","選修",2,"王泰勛","五","6-7 DB-110","本課程需參加9/19（六）全日「115年度新進人員職業安全衛生教育訓練(含通過測驗)」，方可修習；初選限本班；加退選限本系。","中文","50","景都系四日一B"],["景觀及都市設計系","2242","景觀工程","必修",2,"簡伃貞","四","7-8","限本班","中文","65","景都系四日二A"],["景觀及都市設計系","2243","植栽設計","必修",3,"謝維芳","一","1-4","限本班，第1-2節請至苗圃上課","中文","65","景都系四日二A"],["景觀及都市設計系","2244","景觀設計（三）","必修",4,"鍾明孝、葉偉傑、謝維芳、張習賓、吳榮華、黃孝璋、吳孟娟、陳妍瑄、施養政","三","1-4,6-9 D-821","景觀設計（一）及景觀設計（二）修畢及格者，方得修習","中文","110","景都系四日二A"],["景觀及都市設計系","2012","人工智慧設計應用實務專題","選修",3,"李皇良、邱勇標","一","5-7 D-308","本院跨院系＜智慧創意設計與開發學程＞課程","中文","40","景都系四日二A"],["景觀及都市設計系","2014","尖端虛擬實境設計","選修",3,"時暄嵐","五","6-8 D-319","本院跨院系＜智慧創意設計與開發學程＞課程","中文","30","景都系四日二A"],["景觀及都市設計系","2090","多元立體感知設計","選修",3,"許哲瑜","二","2-4 D-315","本院跨院系＜智慧創意設計與開發學程＞課程","中文","40","景都系四日二A"],["景觀及都市設計系","2234","設計競賽實務","選修",2,"李皇良","五","8-9 T2-306.1","技優專班課程，限114學年度入學技優生必選。","中文","40","景都系四日二A"],["景觀及都市設計系","2245","景觀生態學","選修",2,"許哲瑜","二","6-7","初選限本班；加退選限本系","中文","80","景都系四日二A"],["景觀及都市設計系","2246","測量學","選修",3,"彭治平","一","8-10","初選限本班；加退選限本系","中文","50","景都系四日二A"],["景觀及都市設計系","2247","電腦輔助製圖","選修",3,"黃孝璋","四","2-4 D-315","初選限本班；加退選限本系","中文","55","景都系四日二A"],["景觀及都市設計系","2249","景觀專業術語導讀","選修",2,"鄒佩蘅","一","6-7","初選限本班；加退選限本系 全英文授課","英文","50","景都系四日二A"],["景觀及都市設計系","2244","景觀設計（三）","必修",4,"鍾明孝、葉偉傑、謝維芳、張習賓、吳榮華、黃孝璋、吳孟娟、陳妍瑄、施養政","三","1-4,6-9 D-821","景觀設計（一）及景觀設計（二）修畢及格者，方得修習","中文","110","景都系四日二B"],["景觀及都市設計系","2250","景觀工程","必修",2,"簡伃貞","四","9-10","限本班","中文","65","景都系四日二B"],["景觀及都市設計系","2251","植栽設計","必修",3,"廖碧勤","一","1-4","限本班，第1-2節請至苗圃上課","中文","65","景都系四日二B"],["景觀及都市設計系","2012","人工智慧設計應用實務專題","選修",3,"李皇良、邱勇標","一","5-7 D-308","本院跨院系＜智慧創意設計與開發學程＞課程","中文","40","景都系四日二B"],["景觀及都市設計系","2014","尖端虛擬實境設計","選修",3,"時暄嵐","五","6-8 D-319","本院跨院系＜智慧創意設計與開發學程＞課程","中文","30","景都系四日二B"],["景觀及都市設計系","2090","多元立體感知設計","選修",3,"許哲瑜","二","2-4 D-315","本院跨院系＜智慧創意設計與開發學程＞課程","中文","40","景都系四日二B"],["景觀及都市設計系","2245","景觀生態學","選修",2,"許哲瑜","二","6-7","初選限本班；加退選限本系","中文","80","景都系四日二B"],["景觀及都市設計系","2246","測量學","選修",3,"彭治平","一","8-10","初選限本班；加退選限本系","中文","50","景都系四日二B"],["景觀及都市設計系","2249","景觀專業術語導讀","選修",2,"鄒佩蘅","一","6-7","初選限本班；加退選限本系 全英文授課","英文","50","景都系四日二B"],["景觀及都市設計系","2252","電腦輔助製圖","選修",3,"黃孝璋","四","6-8 D-315","初選限本班；加退選限本系","中文","55","景都系四日二B"],["景觀及都市設計系","2253","都市設計(一)","必修",3,"連振佑","三","1-4 T2-407","限本班","中文","60","景都系四日三A"],["景觀及都市設計系","2254","敷地計畫","必修",2,"林基源","五","3-4","限本系","中文","80","景都系四日三A"],["景觀及都市設計系","2255","景觀與都市設計(一)","必修",4,"連振佑、許國威、沈燿在、江弘祺、張逸民、蘇宣如、陸文照、柯佩吟、趙乃嘉","四","1-4,6-9 D-821","景觀設計（三）及景觀設計（四）修畢及格者，方得修習","中文","90","景都系四日三A"],["景觀及都市設計系","2256","施工估價與計畫","選修",2,"吳榮華","二","6-7","初選限本班；加退選限本系","中文","50","景都系四日三A"],["景觀及都市設計系","2257","3D電腦繪圖","選修",2,"黃玫禎","一","6-7 D-315","初選限本班；加退選限本系","中文","55","景都系四日三A"],["景觀及都市設計系","2258","植栽維護與管理","選修",2,"李碧峰","五","6-7","初選限本班；加退選限本系","中文","60","景都系四日三A"],["景觀及都市設計系","2254","敷地計畫","必修",2,"林基源","五","3-4","限本系","中文","80","景都系四日三B"],["景觀及都市設計系","2255","景觀與都市設計(一)","必修",4,"連振佑、許國威、沈燿在、江弘祺、張逸民、蘇宣如、陸文照、柯佩吟、趙乃嘉","四","1-4,6-9 D-821","景觀設計（三）及景觀設計（四）修畢及格者，方得修習","中文","90","景都系四日三B"],["景觀及都市設計系","2259","都市設計(一)","必修",3,"蘇宣如","三","1-4 T2-408","限本班","中文","60","景都系四日三B"],["景觀及都市設計系","2256","施工估價與計畫","選修",2,"吳榮華","二","6-7","初選限本班；加退選限本系","中文","50","景都系四日三B"],["景觀及都市設計系","2258","植栽維護與管理","選修",2,"李碧峰","五","6-7","初選限本班；加退選限本系","中文","60","景都系四日三B"],["景觀及都市設計系","2260","3D電腦繪圖","選修",2,"黃玫禎","一","8-9 D-315","初選限本班；加退選限本系","中文","55","景都系四日三B"],["景觀及都市設計系","2261","景觀行政與法規","必修",2,"連振佑","一","3-4","限本班","中文","80","景都系四日四A"],["景觀及都市設計系","2262","景觀與都市設計（三）","必修",5,"鄒佩蘅、陶誼君、張錦桐、吳銘興、林岳震、李柏蒼","二","1-4,6-7 D-821","1.景觀與都市設計（一）及景景觀與都市設計（二）修畢及格者，方得修習；2.其他上課時段請與授課老師確認。","中文","90","景都系四日四A"],["景觀及都市設計系","2263","景觀與都市設計（三）","必修",5,"鍾明孝","二","1-4,6-7 D-820.1","1.景觀與都市設計（一）及景景觀與都市設計（二）修畢及格者，方得修習；2.其他上課時段請與授課老師確認。","中文","25","景都系四日四A"],["景觀及都市設計系","2264","景觀與都市設計（三）","必修",5,"蘇宣如","二","1-4,6-7 D-820","1.景觀與都市設計（一）及景景觀與都市設計（二）修畢及格者，方得修習；2.其他上課時段請與授課老師確認。","中文","25","景都系四日四A"],["景觀及都市設計系","2265","城鄉風貌專題","選修",2,"簡伃貞","一","","限115學年度暑假參加日本文化景觀見學團之學生修習；上課時間請與教師確認","中文","25","景都系四日四A"],["景觀及都市設計系","2266","數位媒體與動畫","選修",3,"許哲瑜","三","8-10 D-315","限本班","中文","55","景都系四日四A"],["景觀及都市設計系","2267","校外實習(二)","選修",2,"黃孝璋","一","1-2 T2-306.1","1.限114學年度第2學習修習「校外實習(一)」通過者，方可修習。  2.其他上課時段請與授課老師確認。","中文","70","景都系四日四A"],["景觀及都市設計系","2261","景觀行政與法規","必修",2,"連振佑","一","3-4","限本班","中文","80","景都系四日四B"],["景觀及都市設計系","2262","景觀與都市設計（三）","必修",5,"鄒佩蘅、陶誼君、張錦桐、吳銘興、林岳震、李柏蒼","二","1-4,6-7 D-821","1.景觀與都市設計（一）及景景觀與都市設計（二）修畢及格者，方得修習；2.其他上課時段請與授課老師確認。","中文","90","景都系四日四B"],["景觀及都市設計系","2263","景觀與都市設計（三）","必修",5,"鍾明孝","二","1-4,6-7 D-820.1","1.景觀與都市設計（一）及景景觀與都市設計（二）修畢及格者，方得修習；2.其他上課時段請與授課老師確認。","中文","25","景都系四日四B"],["景觀及都市設計系","2264","景觀與都市設計（三）","必修",5,"蘇宣如","二","1-4,6-7 D-820","1.景觀與都市設計（一）及景景觀與都市設計（二）修畢及格者，方得修習；2.其他上課時段請與授課老師確認。","中文","25","景都系四日四B"],["景觀及都市設計系","2265","城鄉風貌專題","選修",2,"簡伃貞","一","","限115學年度暑假參加日本文化景觀見學團之學生修習；上課時間請與教師確認","中文","25","景都系四日四B"],["景觀及都市設計系","2266","數位媒體與動畫","選修",3,"許哲瑜","三","8-10 D-315","限本班","中文","55","景都系四日四B"],["景觀及都市設計系","2267","校外實習(二)","選修",2,"黃孝璋","一","1-2 T2-306.1","1.限114學年度第2學習修習「校外實習(一)」通過者，方可修習。  2.其他上課時段請與授課老師確認。","中文","70","景都系四日四B"],["建築系","1991","中文鑑賞與應用","必修",2,"黃翠芬","二","6-7","","中文","60","建築系建築組四日一A"],["建築系","1992","建築設計(一)","必修",4,"陳鼎岳、劉柯成、馮世人、杜俊賢、邱崑銓、楊學展、鍾韻憲、黃羽晨","一","1-4,6-9 D-604","限本系","中文","80","建築系建築組四日一A"],["建築系","1993","圖學(一)","必修",2,"黃詣迪","三","2-4 D-604","限本系","中文","80","建築系建築組四日一A"],["建築系","1994","體育(體適能)","必修",2,"楊仁仁","四","6-7","","中文","60","建築系建築組四日一A"],["建築系","1996","建築欣賞","選修",2,"董皇志","五","3-4","限本系","中文","120","建築系建築組四日一A"],["建築系","1997","藝術概論","選修",2,"黎翠玉","三","9-10","限本系","中文","120","建築系建築組四日一A"],["建築系","1998","室內設計作品賞析","選修",2,"李皇良","四","3-4","限本系","中文","120","建築系建築組四日一A"],["建築系","2248","設計概論","選修",2,"鄒佩蘅","五","6-7","技優專班課程，限115學年度入學技優生必選。","中文","40","建築系建築組四日一A"],["建築系","1999","中文鑑賞與應用","必修",2,"蘇哲儀","二","6-7","","中文","60","建築系室設組四日一B"],["建築系","2000","基本設計(一)","必修",4,"馮世人、劉柯成、杜俊賢、邱崑銓、楊學展、陳鼎岳、鍾韻憲、黃羽晨","一","1-4,6-9 D-603","限本系","中文","80","建築系室設組四日一B"],["建築系","2001","圖學(一)","必修",2,"黃詣迪","三","6-8 D-603","限本系","中文","80","建築系室設組四日一B"],["建築系","2002","體育(體適能)","必修",2,"柯文益","四","6-7","","中文","60","建築系室設組四日一B"],["建築系","1996","建築欣賞","選修",2,"董皇志","五","3-4","限本系","中文","120","建築系室設組四日一B"],["建築系","1997","藝術概論","選修",2,"黎翠玉","三","9-10","限本系","中文","120","建築系室設組四日一B"],["建築系","1998","室內設計作品賞析","選修",2,"李皇良","四","3-4","限本系","中文","120","建築系室設組四日一B"],["建築系","2248","設計概論","選修",2,"鄒佩蘅","五","6-7","技優專班課程，限115學年度入學技優生必選。","中文","40","建築系室設組四日一B"],["建築系","2003","材料力學","必修",2,"陳清山","一","3-4","限本系","中文","80","建築系建築組四日二A"],["建築系","2004","建築計畫","必修",2,"陳信安","四","9-10","限本系","中文","80","建築系建築組四日二A"],["建築系","2005","建築設計(三)","必修",4,"董皇志、謝文通、廖彥玟、王福君、洪得雄、陳沅煒","三","1-4,6-9 D-602","限本系，1年級設計課未通過者不可選修。","中文","80","建築系建築組四日二A"],["建築系","2006","建築構造與施工(一)","必修",2,"董皇志","一","8-9","限本系","中文","90","建築系建築組四日二A"],["建築系","2007","建築物理環境(一)","必修",2,"陳炯堯","四","3-4","限本系","中文","80","建築系建築組四日二A"],["建築系","2008","邏輯思考與運算","必修",2,"馮世人","四","6-8 D-307","限本系","中文","66","建築系建築組四日二A"],["建築系","2009","西洋建築史","選修",2,"陳俊傑","一","6-7","限本系","中文","110","建築系建築組四日二A"],["建築系","2010","景觀設計概論","選修",2,"葉偉傑","二","6-7","限本系","中文","120","建築系建築組四日二A"],["建築系","2011","住居史","選修",2,"邱建維","五","1-2","限本系","中文","80","建築系建築組四日二A"],["建築系","2012","人工智慧設計應用實務專題","選修",3,"李皇良、邱勇標","一","5-7 D-308","本院跨院系＜智慧創意設計與開發學程＞課程","中文","40","建築系建築組四日二A"],["建築系","2013","國際建築詞彙概論","選修",2,"關志洪","五","6-7","限本系","中文","80","建築系建築組四日二A"],["建築系","2014","尖端虛擬實境設計","選修",3,"時暄嵐","五","6-8 D-319","本院跨院系＜智慧創意設計與開發學程＞課程","中文","30","建築系建築組四日二A"],["建築系","2090","多元立體感知設計","選修",3,"許哲瑜","二","2-4 D-315","本院跨院系＜智慧創意設計與開發學程＞課程","中文","40","建築系建築組四日二A"],["建築系","2234","設計競賽實務","選修",2,"李皇良","五","8-9 T2-306.1","技優專班課程，限114學年度入學技優生必選。","中文","40","建築系建築組四日二A"],["建築系","2015","室內設計(一)","必修",4,"陳俊傑、李皇良、邱俊凱、徐福基、林凱偉、凃立琪","三","1-4,6-9 D-721","限本系，1年級設計課未通過者不可選修。","中文","75","建築系室設組四日二B"],["建築系","2016","室內空間計畫","必修",2,"陳鼎岳","四","6-7","限本系","中文","75","建築系室設組四日二B"],["建築系","2017","室內物理環境","必修",2,"陳炯堯","一","1-2","限本系","中文","75","建築系室設組四日二B"],["建築系","2018","邏輯思考與運算","必修",2,"馮世人","四","2-4 D-307","限本系","中文","66","建築系室設組四日二B"],["建築系","2009","西洋建築史","選修",2,"陳俊傑","一","6-7","限本系","中文","110","建築系室設組四日二B"],["建築系","2010","景觀設計概論","選修",2,"葉偉傑","二","6-7","限本系","中文","120","建築系室設組四日二B"],["建築系","2011","住居史","選修",2,"邱建維","五","1-2","限本系","中文","80","建築系室設組四日二B"],["建築系","2012","人工智慧設計應用實務專題","選修",3,"李皇良、邱勇標","一","5-7 D-308","本院跨院系＜智慧創意設計與開發學程＞課程","中文","40","建築系室設組四日二B"],["建築系","2013","國際建築詞彙概論","選修",2,"關志洪","五","6-7","限本系","中文","80","建築系室設組四日二B"],["建築系","2014","尖端虛擬實境設計","選修",3,"時暄嵐","五","6-8 D-319","本院跨院系＜智慧創意設計與開發學程＞課程","中文","30","建築系室設組四日二B"],["建築系","2019","室內空間計畫演練","選修",1,"陳鼎岳","四","8","限本系","中文","75","建築系室設組四日二B"],["建築系","2090","多元立體感知設計","選修",3,"許哲瑜","二","2-4 D-315","本院跨院系＜智慧創意設計與開發學程＞課程","中文","40","建築系室設組四日二B"],["建築系","2234","設計競賽實務","選修",2,"李皇良","五","8-9 T2-306.1","技優專班課程，限114學年度入學技優生必選。","中文","40","建築系室設組四日二B"],["建築系","2020","建築設計(五)","必修",4,"陳清山、郭章淵、李仁智、潘則宇、張允中","四","1-4,6-9 D-601","限本系，2年級設計課未通過者不可選修。","中文","60","建築系建築組四日三A"],["建築系","2021","建築設備(一)","必修",2,"吳昱洲","五","3-4","限本系","中文","75","建築系建築組四日三A"],["建築系","2022","建築結構系統","必修",2,"陳清山","一","6-7","限本系","中文","75","建築系建築組四日三A"],["建築系","2023","敷地計畫","必修",2,"陳信安","五","8-9","限本系","中文","75","建築系建築組四日三A"],["建築系","2024","綠建築及生態社區","選修",2,"郭柏巖","二","3-4","限本系","中文","90","建築系建築組四日三A"],["建築系","2025","版面構成與展示設計","選修",2,"林泊享","二","6-7","限本系","中文","70","建築系建築組四日三A"],["建築系","2026","建築資訊模型應用技術","選修",2,"郭其綱","一","2-4 D-307","限本系","中文","66","建築系建築組四日三A"],["建築系","2027","AI高效資料探勘與設計","選修",2,"郭柏巖","三","4-5 D-308","限本系","中文","60","建築系建築組四日三A"],["建築系","2028","室內設計(三)","必修",4,"邱建維、葉建甫、張一庭、陳惠玲、吳昱洲","四","1-4,6-9 D-723","限本系，2年級設計課未通過者不可選修。","中文","75","建築系室設組四日三B"],["建築系","2029","室內裝修施工圖","必修",2,"陳俊傑","一","2-3","限本系","中文","75","建築系室設組四日三B"],["建築系","2030","防火及裝修材料","必修",2,"李皇良","一","8-9","限本系","中文","75","建築系室設組四日三B"],["建築系","2031","室內環境控制(二)","必修",2,"吳昱洲","五","6-7","限本系","中文","75","建築系室設組四日三B"],["建築系","2024","綠建築及生態社區","選修",2,"郭柏巖","二","3-4","限本系","中文","90","建築系室設組四日三B"],["建築系","2025","版面構成與展示設計","選修",2,"林泊享","二","6-7","限本系","中文","70","建築系室設組四日三B"],["建築系","2027","AI高效資料探勘與設計","選修",2,"郭柏巖","三","4-5 D-308","限本系","中文","60","建築系室設組四日三B"],["建築系","2032","建築資訊模型應用技術","選修",2,"郭其綱","五","2-4 D-307","限本系","中文","66","建築系室設組四日三B"],["建築系","2033","室內裝修施工圖演練","選修",1,"陳俊傑","一","4","限本系","中文","75","建築系室設組四日三B"],["建築系","2034","建築設計(七)","必修",5,"吳昱洲、董皇志、陳信安、施純誠、陳清山、沈永堂、陳炯堯、關志洪、楊捷安、郭其綱、李皇良、馮世人、黃定騫","二","1-4,6-7 D-601","1.限本系，3年級設計課未通過者不可選修；2.其他上課時段請自行與指導老師討論。","中文","70","建築系建築組四日四A"],["建築系","2035","都市設計","必修",2,"陳信安","四","6-7","限本系","中文","75","建築系建築組四日四A"],["建築系","2036","營建法規","必修",2,"周秉慶、戴進財","三","1-2","限本系","中文","75","建築系建築組四日四A"],["建築系","2037","施工與估價","選修",2,"傅任淇","五","3-4","限本系","中文","70","建築系建築組四日四A"],["建築系","2038","校外實習","選修",4,"董皇志、陳炯堯","一","3-4,6-7 D-909","有簽訂校外實習合約書且教師已訪視者，方可選修。","中文","25","建築系建築組四日四A"],["建築系","2039","建築師實務與管理","選修",2,"傅任淇","五","1-2","限本系","中文","70","建築系建築組四日四A"],["建築系","2041","室內設計(五)","必修",5,"吳昱洲、董皇志、陳信安、施純誠、沈永堂、陳俊傑、陳炯堯、關志洪、楊捷安、邱建維、郭其綱、李皇良、馮世人、黃定騫、陳鼎岳","二","1-4,6-7 D-721","1.限本系，3年級設計課未通過者不可選修；2.其他上課時段請自行與指導老師討論。","中文","75","建築系室設組四日四B"],["建築系","2042","室內設計法規","必修",2,"周秉慶、戴進財","三","3-4","限本系","中文","75","建築系室設組四日四B"],["建築系","2043","執業管理與實務","必修",2,"余杰茂","三","6-7","限本系","中文","75","建築系室設組四日四B"],["建築系","2037","施工與估價","選修",2,"傅任淇","五","3-4","限本系","中文","70","建築系室設組四日四B"],["建築系","2038","校外實習","選修",4,"董皇志、陳炯堯","一","3-4,6-7 D-909","有簽訂校外實習合約書且教師已訪視者，方可選修。","中文","25","建築系室設組四日四B"],["建築系","2039","建築師實務與管理","選修",2,"傅任淇","五","1-2","限本系","中文","70","建築系室設組四日四B"],["工業設計系","2054","中文鑑賞與應用","必修",2,"張俐雯","一","3-4 T1-201","","中文","60","工設系四日一A"],["工業設計系","2055","基本設計(一)","必修",3,"曾永玲","三","6-9 D-509","A組,限本系學生修習","中文","17","工設系四日一A"],["工業設計系","2056","基本設計(一)","必修",3,"蕭明瑜","三","6-9 D-505A","B組,限本系學生修習","中文","17","工設系四日一A"],["工業設計系","2057","基本設計(一)","必修",3,"江日瑋","三","6-9 D-505B","C組,限本系學生修習","中文","17","工設系四日一A"],["工業設計系","2058","基本設計(一)","必修",3,"陳小加","三","6-9 D-506","D組,限本系學生修習","中文","17","工設系四日一A"],["工業設計系","2059","設計圖學(一)","必修",2,"洪明宏、陳建男","五","2-4 D-308","限本系學生修習","中文","64","工設系四日一A"],["工業設計系","2060","體育(體適能)","必修",2,"周明修","一","6-7","","中文","60","工設系四日一A"],["工業設計系","2061","設計表現技法","必修",2,"劉兆漣","五","6-8 D-307","A組,限本系學生修習","中文","33","工設系四日一A"],["工業設計系","2062","設計表現技法","必修",2,"陳家騏","三","2-4 D-505A","B組,限本系學生修習","中文","33","工設系四日一A"],["工業設計系","2063","資通訊與AI應用","必修",2,"林啟裕","四","1-2","","中文","60","工設系四日一A"],["工業設計系","2064","模型工廠實作","必修",2,"吳俊寬","四","3-5 DB-110","限本系學生修習","中文","65","工設系四日一A"],["工業設計系","2068","基本設計(一)","必修",3,"黃裕哲","三","6-9 D-510","E組,限本系學生修習","中文","17","工設系四日一A"],["工業設計系","2069","基本設計(一)","必修",3,"時暄嵐","三","6-9 D-509A","F組,限本系學生修習","中文","17","工設系四日一A"],["工業設計系","2070","基本設計(一)","必修",3,"陳芍伊","三","6-9 D-510A","G組,限本系學生修習","中文","17","工設系四日一A"],["工業設計系","2071","基本設計(一)","必修",3,"薛佩君","三","6-9 D-507","H組,限本系學生修習","中文","17","工設系四日一A"],["工業設計系","2065","設計史","選修",2,"諸葛正","一","9-10","限本系學生修習","中文","70","工設系四日一A"],["工業設計系","2066","設計圖學(一)演練","選修",1,"洪明宏","五","9 D-308","限本系學生修習","中文","65","工設系四日一A"],["工業設計系","2248","設計概論","選修",2,"鄒佩蘅","五","6-7","技優專班課程，限115學年度入學技優生必選。","中文","40","工設系四日一A"],["工業設計系","2055","基本設計(一)","必修",3,"曾永玲","三","6-9 D-509","A組,限本系學生修習","中文","17","工設系四日一B"],["工業設計系","2056","基本設計(一)","必修",3,"蕭明瑜","三","6-9 D-505A","B組,限本系學生修習","中文","17","工設系四日一B"],["工業設計系","2057","基本設計(一)","必修",3,"江日瑋","三","6-9 D-505B","C組,限本系學生修習","中文","17","工設系四日一B"],["工業設計系","2058","基本設計(一)","必修",3,"陳小加","三","6-9 D-506","D組,限本系學生修習","中文","17","工設系四日一B"],["工業設計系","2067","中文鑑賞與應用","必修",2,"林政言","一","3-4","","中文","60","工設系四日一B"],["工業設計系","2068","基本設計(一)","必修",3,"黃裕哲","三","6-9 D-510","E組,限本系學生修習","中文","17","工設系四日一B"],["工業設計系","2069","基本設計(一)","必修",3,"時暄嵐","三","6-9 D-509A","F組,限本系學生修習","中文","17","工設系四日一B"],["工業設計系","2070","基本設計(一)","必修",3,"陳芍伊","三","6-9 D-510A","G組,限本系學生修習","中文","17","工設系四日一B"],["工業設計系","2071","基本設計(一)","必修",3,"薛佩君","三","6-9 D-507","H組,限本系學生修習","中文","17","工設系四日一B"],["工業設計系","2072","設計圖學(一)","必修",2,"洪明宏","五","6-8 D-308","限本系學生修習","中文","64","工設系四日一B"],["工業設計系","2073","體育(體適能)","必修",2,"林祐陞、賴俊安","一","6-7","","中文","60","工設系四日一B"],["工業設計系","2074","設計表現技法","必修",2,"吳彧韡","三","2-4 D-307","A組,限本系學生修習","中文","33","工設系四日一B"],["工業設計系","2075","設計表現技法","必修",2,"劉兆漣","五","2-4 D-310","B組,限本系學生修習","中文","33","工設系四日一B"],["工業設計系","2076","資通訊與AI應用","必修",2,"黃敦煌","四","3-4 G-509","","中文","52","工設系四日一B"],["工業設計系","2077","模型工廠實作","必修",2,"吳永發","四","8-10 DB-110","限本系學生修習","中文","68","工設系四日一B"],["工業設計系","2065","設計史","選修",2,"諸葛正","一","9-10","限本系學生修習","中文","70","工設系四日一B"],["工業設計系","2066","設計圖學(一)演練","選修",1,"洪明宏","五","9 D-308","限本系學生修習","中文","65","工設系四日一B"],["工業設計系","2078","產品色彩計畫","必修",2,"周文智","四","3-4 T2-320","限本系學生修習","中文","62","工設系四日二A"],["工業設計系","2079","產品設計(一)","必修",3,"陳建男","四","6-9 D-507","A組,限本系學生修習","中文","20","工設系四日二A"],["工業設計系","2080","產品設計(一)","必修",3,"馮宗舜","四","6-9 D-510A","B組,限本系學生修習","中文","20","工設系四日二A"],["工業設計系","2081","產品設計(一)","必修",3,"胡祖武、朱谷熹","四","6-9 D-510","C組,限本系學生修習","中文","20","工設系四日二A"],["工業設計系","2082","設計思考","必修",2,"黃台生","五","6-7 T2-316","限本系學生修習","中文","65","工設系四日二A"],["工業設計系","2083","電腦輔助造型設計","必修",2,"陳維隆、楊熹龍","二","1-3 D-308","限本系學生修習","中文","64","工設系四日二A"],["工業設計系","2095","產品設計(一)","必修",3,"時暄嵐","四","6-9 D-509","D組,限本系學生修習","中文","20","工設系四日二A"],["工業設計系","2096","產品設計(一)","必修",3,"陳家騏","四","6-9 D-505A","E組,限本系學生修習","中文","20","工設系四日二A"],["工業設計系","2097","產品設計(一)","必修",3,"李雁隆、蔡忠諺","四","6-9 D-505B","F組,限本系學生修習","中文","20","工設系四日二A"],["工業設計系","2012","人工智慧設計應用實務專題","選修",3,"李皇良、邱勇標","一","5-7 D-308","本院跨院系＜智慧創意設計與開發學程＞課程","中文","40","工設系四日二A"],["工業設計系","2014","尖端虛擬實境設計","選修",3,"時暄嵐","五","6-8 D-319","本院跨院系＜智慧創意設計與開發學程＞課程","中文","30","工設系四日二A"],["工業設計系","2084","人因設計","選修",2,"朱谷熹","五","9-10",",限本系學生修習","中文","60","工設系四日二A"],["工業設計系","2085","生活型態設計","選修",2,"朱谷熹","三","9-10","限本系學生修習","中文","66","工設系四日二A"],["工業設計系","2086","金屬加工設計(一)","選修",2,"曾永玲","一","2-4 DB-110.2","限本系學生修習","中文","35","工設系四日二A"],["工業設計系","2087","設計工學","選修",2,"黃裕哲","一","9-10 D-308","限本系學生修習","中文","64","工設系四日二A"],["工業設計系","2088","視覺傳達設計","選修",2,"張智超","三","6-8 D-308","限本系學生修習","中文","64","工設系四日二A"],["工業設計系","2089","木竹工藝設計(一)","選修",2,"吳俊寬","三","2-4 D-503","限本系學生修習","中文","40","工設系四日二A"],["工業設計系","2090","多元立體感知設計","選修",3,"許哲瑜","二","2-4 D-315","本院跨院系＜智慧創意設計與開發學程＞課程","中文","40","工設系四日二A"],["工業設計系","2091","進階數位表現技法","選修",2,"朱信泰","二","5-7 D-307",",限本系學生修習","中文","64","工設系四日二A"],["工業設計系","2092","設計美學賞析","選修",2,"劉依青","五","1-2 D-503","限本系學生修習","中文","65","工設系四日二A"],["工業設計系","2093","電腦輔助造型設計演練","選修",1,"陳維隆","四","1 D-308","","中文","64","工設系四日二A"],["工業設計系","2234","設計競賽實務","選修",2,"李皇良","五","8-9 T2-306.1","技優專班課程，限114學年度入學技優生必選。","中文","40","工設系四日二A"],["工業設計系","2079","產品設計(一)","必修",3,"陳建男","四","6-9 D-507","A組,限本系學生修習","中文","20","工設系四日二B"],["工業設計系","2080","產品設計(一)","必修",3,"馮宗舜","四","6-9 D-510A","B組,限本系學生修習","中文","20","工設系四日二B"],["工業設計系","2081","產品設計(一)","必修",3,"胡祖武、朱谷熹","四","6-9 D-510","C組,限本系學生修習","中文","20","工設系四日二B"],["工業設計系","2094","產品色彩計畫","必修",2,"周文智","一","1-2 T2-320","限本系學生修習","中文","64","工設系四日二B"],["工業設計系","2095","產品設計(一)","必修",3,"時暄嵐","四","6-9 D-509","D組,限本系學生修習","中文","20","工設系四日二B"],["工業設計系","2096","產品設計(一)","必修",3,"陳家騏","四","6-9 D-505A","E組,限本系學生修習","中文","20","工設系四日二B"],["工業設計系","2097","產品設計(一)","必修",3,"李雁隆、蔡忠諺","四","6-9 D-505B","F組,限本系學生修習","中文","20","工設系四日二B"],["工業設計系","2098","設計思考","必修",2,"諸葛正","二","4-5 D-503","限本系學生修習","中文","60","工設系四日二B"],["工業設計系","2099","電腦輔助造型設計","必修",2,"陳維隆、楊熹龍","四","2-4 D-308","限本系學生修習","中文","64","工設系四日二B"],["工業設計系","2012","人工智慧設計應用實務專題","選修",3,"李皇良、邱勇標","一","5-7 D-308","本院跨院系＜智慧創意設計與開發學程＞課程","中文","40","工設系四日二B"],["工業設計系","2014","尖端虛擬實境設計","選修",3,"時暄嵐","五","6-8 D-319","本院跨院系＜智慧創意設計與開發學程＞課程","中文","30","工設系四日二B"],["工業設計系","2084","人因設計","選修",2,"朱谷熹","五","9-10",",限本系學生修習","中文","60","工設系四日二B"],["工業設計系","2085","生活型態設計","選修",2,"朱谷熹","三","9-10","限本系學生修習","中文","66","工設系四日二B"],["工業設計系","2087","設計工學","選修",2,"黃裕哲","一","9-10 D-308","限本系學生修習","中文","64","工設系四日二B"],["工業設計系","2088","視覺傳達設計","選修",2,"張智超","三","6-8 D-308","限本系學生修習","中文","64","工設系四日二B"],["工業設計系","2089","木竹工藝設計(一)","選修",2,"吳俊寬","三","2-4 D-503","限本系學生修習","中文","40","工設系四日二B"],["工業設計系","2090","多元立體感知設計","選修",3,"許哲瑜","二","2-4 D-315","本院跨院系＜智慧創意設計與開發學程＞課程","中文","40","工設系四日二B"],["工業設計系","2092","設計美學賞析","選修",2,"劉依青","五","1-2 D-503","限本系學生修習","中文","65","工設系四日二B"],["工業設計系","2093","電腦輔助造型設計演練","選修",1,"陳維隆","四","1 D-308","","中文","64","工設系四日二B"],["工業設計系","2100","金屬加工設計(一)","選修",2,"陳小加","五","6-8 DB-110.2","限本系學生修習","中文","35","工設系四日二B"],["工業設計系","2101","進階數位表現技法","選修",2,"朱信泰","一","6-8 D-307","限本系學生修習","中文","64","工設系四日二B"],["工業設計系","2102","設計方法","必修",2,"李雁隆、蔡忠諺","一","8-9 D-503","限本系學生修習","中文","65","工設系四日三A"],["工業設計系","2103","產品設計(三)","必修",3,"馮宗舜","二","1-4 D-510A","A組,限本系學生修習","中文","19","工設系四日三A"],["工業設計系","2104","產品設計(三)","必修",3,"黃裕哲","二","1-4 D-505A","B組,限本系學生修習","中文","19","工設系四日三A"],["工業設計系","2105","產品設計(三)","必修",3,"吳俊寬","二","1-4 D-510","C組,限本系學生修習","中文","19","工設系四日三A"],["工業設計系","2117","產品設計(三)","必修",3,"蕭明瑜","二","1-4 D-509","D組,限本系學生修習","中文","19","工設系四日三A"],["工業設計系","2118","產品設計(三)","必修",3,"謝明軒","二","1-4 D-507","E組,限本系學生修習","中文","19","工設系四日三A"],["工業設計系","2119","產品設計(三)","必修",3,"周文智","二","1-4 D-506","F組,限本系學生修習","中文","19","工設系四日三A"],["工業設計系","2106","市場調查與行銷","選修",2,"李尚嬪","二","6-7 D-503","限本系學生修習","中文","66","工設系四日三A"],["工業設計系","2107","產品企劃","選修",2,"諸葛正","四","6-7 D-503A","限本系學生修習","中文","65","工設系四日三A"],["工業設計系","2108","陶藝設計(一)","選修",2,"陳芍伊","一","2-4 C-102","限本系學生修習","中文","40","工設系四日三A"],["工業設計系","2109","智慧財產權概論","選修",2,"廖靜如","五","9-10","限本系學生修習","中文","68","工設系四日三A"],["工業設計系","2110","綠色產品設計","選修",2,"黃裕哲","四","1-2 D-503",",限本系學生修習","中文","65","工設系四日三A"],["工業設計系","2111","人機介面設計","選修",2,"胡祖武","三","8-10","限本系學生修習","中文","65","工設系四日三A"],["工業設計系","2112","進階電腦輔助工業設計","選修",2,"郭鶴琳","三","1-3 D-308","限本系學生修習","中文","64","工設系四日三A"],["工業設計系","2113","文創設計","選修",2,"李雁隆","四","3-4","限本系學生修習","中文","65","工設系四日三A"],["工業設計系","2114","自媒體設計","選修",2,"孫筱瑜","五","2-4 D-503A","","中文","64","工設系四日三A"],["工業設計系","2115","產品渲染表現","選修",2,"吳彧韡","三","5-7 D-307","限本系學生修習","中文","65","工設系四日三A"],["工業設計系","2103","產品設計(三)","必修",3,"馮宗舜","二","1-4 D-510A","A組,限本系學生修習","中文","19","工設系四日三B"],["工業設計系","2104","產品設計(三)","必修",3,"黃裕哲","二","1-4 D-505A","B組,限本系學生修習","中文","19","工設系四日三B"],["工業設計系","2105","產品設計(三)","必修",3,"吳俊寬","二","1-4 D-510","C組,限本系學生修習","中文","19","工設系四日三B"],["工業設計系","2116","設計方法","必修",2,"李雁隆、蔡忠諺","一","2-3 D-503A","限本系學生修習","中文","65","工設系四日三B"],["工業設計系","2117","產品設計(三)","必修",3,"蕭明瑜","二","1-4 D-509","D組,限本系學生修習","中文","19","工設系四日三B"],["工業設計系","2118","產品設計(三)","必修",3,"謝明軒","二","1-4 D-507","E組,限本系學生修習","中文","19","工設系四日三B"],["工業設計系","2119","產品設計(三)","必修",3,"周文智","二","1-4 D-506","F組,限本系學生修習","中文","19","工設系四日三B"],["工業設計系","2106","市場調查與行銷","選修",2,"李尚嬪","二","6-7 D-503","限本系學生修習","中文","66","工設系四日三B"],["工業設計系","2107","產品企劃","選修",2,"諸葛正","四","6-7 D-503A","限本系學生修習","中文","65","工設系四日三B"],["工業設計系","2109","智慧財產權概論","選修",2,"廖靜如","五","9-10","限本系學生修習","中文","68","工設系四日三B"],["工業設計系","2110","綠色產品設計","選修",2,"黃裕哲","四","1-2 D-503",",限本系學生修習","中文","65","工設系四日三B"],["工業設計系","2111","人機介面設計","選修",2,"胡祖武","三","8-10","限本系學生修習","中文","65","工設系四日三B"],["工業設計系","2112","進階電腦輔助工業設計","選修",2,"郭鶴琳","三","1-3 D-308","限本系學生修習","中文","64","工設系四日三B"],["工業設計系","2113","文創設計","選修",2,"李雁隆","四","3-4","限本系學生修習","中文","65","工設系四日三B"],["工業設計系","2114","自媒體設計","選修",2,"孫筱瑜","五","2-4 D-503A","","中文","64","工設系四日三B"],["工業設計系","2115","產品渲染表現","選修",2,"吳彧韡","三","5-7 D-307","限本系學生修習","中文","65","工設系四日三B"],["工業設計系","2120","陶藝設計(一)","選修",2,"陳芍伊","四","8-10 C-102","限本系學生修習","中文","40","工設系四日三B"],["工業設計系","2121","作品集設計","必修",2,"蕭明瑜","四","3-4 D-503","限本系學生修習","中文","66","工設系四日四A"],["工業設計系","2122","專題設計(一)","必修",5,"周文智、蕭明瑜","一","","A組,上課時間請與教師確認","中文","22","工設系四日四A"],["工業設計系","2123","專題設計(一)","必修",5,"周文智、馮宗舜、陳芍伊","一","","B組,上課時間請與教師確認","中文","22","工設系四日四A"],["工業設計系","2124","專題設計(一)","必修",5,"周文智、陳維隆、曾永玲","一","","C組,上課時間請與教師確認","中文","22","工設系四日四A"],["工業設計系","2125","包裝設計","選修",2,"馮宗舜","一","2-4 D-503","限本系學生修習","中文","66","工設系四日四A"],["工業設計系","2126","玻璃藝術設計(一)","選修",2,"楊子賢","三","6-8 C-102","限本系學生修習","中文","40","工設系四日四A"],["工業設計系","2127","校外實習","選修",4,"謝明軒","一","",",限本系學生修習","中文","50","工設系四日四A"],["工業設計系","2128","設計技術講座","選修",2,"黃台生","五","2-4 T2-320","限本系學生修習","中文","60","工設系四日四A"],["工業設計系","2129","電腦輔助工程製造","選修",2,"王泰勛","四","8-10 D-308","限本系學生修習","中文","60","工設系四日四A"],["工業設計系","2130","數位工藝設計(一)","選修",2,"曾永玲","四","6-7 D-503","限本系學生修習","中文","66","工設系四日四A"],["工業設計系","2131","作品集設計","必修",2,"謝明軒","四","3-4 D-503A","限本系學生修習","中文","66","工設系四日四B"],["工業設計系","2132","專題設計(一)","必修",5,"吳俊寬、時暄嵐","一","","A組,上課時間請與教師確認","中文","22","工設系四日四B"],["工業設計系","2133","專題設計(一)","必修",5,"吳俊寬、黃裕哲、李雁隆","一","","B組,上課時間請與教師確認","中文","22","工設系四日四B"],["工業設計系","2134","專題設計(一)","必修",5,"吳俊寬、黃台生、謝明軒","一","","C組,上課時間請與教師確認","中文","22","工設系四日四B"],["工業設計系","2125","包裝設計","選修",2,"馮宗舜","一","2-4 D-503","限本系學生修習","中文","66","工設系四日四B"],["工業設計系","2127","校外實習","選修",4,"謝明軒","一","",",限本系學生修習","中文","50","工設系四日四B"],["工業設計系","2128","設計技術講座","選修",2,"黃台生","五","2-4 T2-320","限本系學生修習","中文","60","工設系四日四B"],["工業設計系","2129","電腦輔助工程製造","選修",2,"王泰勛","四","8-10 D-308","限本系學生修習","中文","60","工設系四日四B"],["工業設計系","2130","數位工藝設計(一)","選修",2,"曾永玲","四","6-7 D-503","限本系學生修習","中文","66","工設系四日四B"],["工業設計系","2135","玻璃藝術設計(一)","選修",2,"楊子賢","三","2-4 C-102","限本系學生修習","中文","40","工設系四日四B"],["視覺傳達設計系","2146","中文鑑賞與應用","必修",2,"林政言","一","1-2","","中文","60","視傳系四日一A"],["視覺傳達設計系","2147","文字造形","必修",2,"王秀如","三","2-4 D-410","A組，限本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日一A"],["視覺傳達設計系","2148","文字造形","必修",2,"王秀如","三","6-8 D-410","B組，限本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日一A"],["視覺傳達設計系","2149","素描","必修",2,"施姿伊","三","6-8 B-101","A組，限本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日一A"],["視覺傳達設計系","2150","素描","必修",2,"洪祥豪","一","8-10 B-101","B組，限本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日一A"],["視覺傳達設計系","2151","基本設計(一)","必修",2,"楊屏玉","四","1-3 D-407","A組，限本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日一A"],["視覺傳達設計系","2152","基本設計(一)","必修",2,"楊屏玉","四","6-8 D-407","B組，限本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日一A"],["視覺傳達設計系","2153","體育(體適能)","必修",2,"林晉德","一","6-7","","中文","60","視傳系四日一A"],["視覺傳達設計系","2154","資通訊與AI應用","必修",2,"蕭宏州","五","1-2","","中文","60","視傳系四日一A"],["視覺傳達設計系","2155","基礎數位影像與繪圖","必修",2,"黃俊明","四","5-7 D-309","A組，限本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日一A"],["視覺傳達設計系","2156","基礎數位影像與繪圖","必修",2,"黃俊明","三","2-4 D-309","B組，限本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日一A"],["視覺傳達設計系","2157","藝術與設計概論","必修",2,"李耀華、黎翠玉","五","3-4 D-404","限本系、雙主修、輔系及跨院系學程選課","中文","70","視傳系四日一A"],["視覺傳達設計系","2248","設計概論","選修",2,"鄒佩蘅","五","6-7","技優專班課程，限115學年度入學技優生必選。","中文","40","視傳系四日一A"],["視覺傳達設計系","2158","中文鑑賞與應用","必修",2,"王詩惠","一","1-2","","中文","60","視傳系四日一B"],["視覺傳達設計系","2159","文字造形","必修",2,"劉棠思","三","6-8 D-409","A組，限本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日一B"],["視覺傳達設計系","2160","文字造形","必修",2,"劉棠思","三","1-3 D-409","B組，限本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日一B"],["視覺傳達設計系","2161","素描","必修",2,"陳崑鋒","三","1-3 B-101","A組，限本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日一B"],["視覺傳達設計系","2162","素描","必修",2,"陳崑鋒","四","6-8 B-101","B組，限本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日一B"],["視覺傳達設計系","2163","基本設計(一)","必修",2,"呂昭慧","四","6-8 D-412","A組，限本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日一B"],["視覺傳達設計系","2164","基本設計(一)","必修",2,"呂昭慧","四","2-4 D-412","B組，限本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日一B"],["視覺傳達設計系","2165","體育(體適能)","必修",2,"李亭儀","一","6-7","","中文","60","視傳系四日一B"],["視覺傳達設計系","2166","色彩計畫","必修",2,"王秀如","五","2-4 D-410","B組，限本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日一B"],["視覺傳達設計系","2167","色彩計畫","必修",2,"王秀如","四","2-4 D-410","A組，限本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日一B"],["視覺傳達設計系","2168","資通訊與AI應用","必修",2,"林永設","一","3-4 D-310","","中文","60","視傳系四日一B"],["視覺傳達設計系","2169","基礎數位影像與繪圖","必修",2,"陳合成","三","5-7 D-309","B組，限本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日一B"],["視覺傳達設計系","2170","基礎數位影像與繪圖","必修",2,"陳合成","五","2-4 D-309","A組，限本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日一B"],["視覺傳達設計系","2171","藝術與設計概論","必修",2,"李耀華、黎翠玉","五","6-7 D-404","限本系、雙主修、輔系及跨院系學程選課","中文","70","視傳系四日一B"],["視覺傳達設計系","2172","視覺傳達設計","必修",2,"林慶利","三","2-4 D-406","A組，限修過基礎數位影像與繪圖及格者；本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日二A"],["視覺傳達設計系","2173","視覺傳達設計","必修",2,"林慶利","三","6-8 D-406","B組，限修過基礎數位影像與繪圖及格者；本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日二A"],["視覺傳達設計系","2174","編輯設計","必修",2,"王惠姿","三","6-8 D-407","A組，限修過文字造形及基礎數位影像與繪圖及格者；本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日二A"],["視覺傳達設計系","2175","編輯設計","必修",2,"王惠姿","三","2-4 D-407","B組，限修過文字造形及基礎數位影像與繪圖及格者；本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日二A"],["視覺傳達設計系","2176","邏輯思考與運算","必修",3,"李其瑋","四","5-7 D-310","限本系、雙主修、輔系及跨院系學程選課","中文","70","視傳系四日二A"],["視覺傳達設計系","2012","人工智慧設計應用實務專題","選修",3,"李皇良、邱勇標","一","5-7 D-308","本院跨院系＜智慧創意設計與開發學程＞課程","中文","40","視傳系四日二A"],["視覺傳達設計系","2014","尖端虛擬實境設計","選修",3,"時暄嵐","五","6-8 D-319","本院跨院系＜智慧創意設計與開發學程＞課程","中文","30","視傳系四日二A"],["視覺傳達設計系","2090","多元立體感知設計","選修",3,"許哲瑜","二","2-4 D-315","本院跨院系＜智慧創意設計與開發學程＞課程","中文","40","視傳系四日二A"],["視覺傳達設計系","2177","立體造形","選修",2,"洪祥豪","二","6-7,10 D-409","限本系、雙主修、輔系及跨院系學程選課","中文","51","視傳系四日二A"],["視覺傳達設計系","2178","商業攝影","選修",2,"陳志和","四","8-10 D-113","限本系、雙主修、輔系及跨院系學程選課","中文","51","視傳系四日二A"],["視覺傳達設計系","2179","設計計劃與調查","選修",2,"劉棠思","二","2-4 D-404","限本系、雙主修、輔系及跨院系學程選課","中文","51","視傳系四日二A"],["視覺傳達設計系","2180","3D數位建模","選修",2,"林佳鴻","四","1-3 D-310","限本系、雙主修、輔系及跨院系學程選課，全英文授課","英文","70","視傳系四日二A"],["視覺傳達設計系","2181","包材結構設計","選修",2,"莊國民","一","6-8 D-406","限本系、雙主修、輔系及跨院系學程選課","中文","51","視傳系四日二A"],["視覺傳達設計系","2182","手繪動畫(一)","選修",2,"馮偉中","五","6-8 D-310","限本系、雙主修、輔系及跨院系學程選課","中文","70","視傳系四日二A"],["視覺傳達設計系","2234","設計競賽實務","選修",2,"李皇良","五","8-9 T2-306.1","技優專班課程，限114學年度入學技優生必選。","中文","40","視傳系四日二A"],["視覺傳達設計系","2183","視覺傳達設計","必修",2,"呂昭慧","二","2-4 D-412","A組，限修過基礎數位影像與繪圖及格者；本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日二B"],["視覺傳達設計系","2184","視覺傳達設計","必修",2,"呂昭慧","三","6-8 D-412","B組，限修過基礎數位影像與繪圖及格者；本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日二B"],["視覺傳達設計系","2185","編輯設計","必修",2,"莊國民","三","6-8 D-305","A組，限修過文字造形及基礎數位影像與繪圖及格者；本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日二B"],["視覺傳達設計系","2186","編輯設計","必修",2,"王桂沰","二","2-4 D-410","B組，限修過文字造形及基礎數位影像與繪圖及格者；本系、雙主修、輔系及跨院系學程選課","中文","45","視傳系四日二B"],["視覺傳達設計系","2012","人工智慧設計應用實務專題","選修",3,"李皇良、邱勇標","一","5-7 D-308","本院跨院系＜智慧創意設計與開發學程＞課程","中文","40","視傳系四日二B"],["視覺傳達設計系","2014","尖端虛擬實境設計","選修",3,"時暄嵐","五","6-8 D-319","本院跨院系＜智慧創意設計與開發學程＞課程","中文","30","視傳系四日二B"],["視覺傳達設計系","2090","多元立體感知設計","選修",3,"許哲瑜","二","2-4 D-315","本院跨院系＜智慧創意設計與開發學程＞課程","中文","40","視傳系四日二B"],["視覺傳達設計系","2177","立體造形","選修",2,"洪祥豪","二","6-7,10 D-409","限本系、雙主修、輔系及跨院系學程選課","中文","51","視傳系四日二B"],["視覺傳達設計系","2180","3D數位建模","選修",2,"林佳鴻","四","1-3 D-310","限本系、雙主修、輔系及跨院系學程選課，全英文授課","英文","70","視傳系四日二B"],["視覺傳達設計系","2182","手繪動畫(一)","選修",2,"馮偉中","五","6-8 D-310","限本系、雙主修、輔系及跨院系學程選課","中文","70","視傳系四日二B"],["視覺傳達設計系","2187","商業攝影","選修",2,"陳志和","三","2-4 D-113","限本系、雙主修、輔系及跨院系學程選課","中文","51","視傳系四日二B"],["視覺傳達設計系","2188","設計計劃與調查","選修",2,"劉棠思","一","2-4 D-409","限本系、雙主修、輔系及跨院系學程選課","中文","51","視傳系四日二B"],["視覺傳達設計系","2189","2D動畫設計","選修",2,"郭原昌","一","8-10 D-310","限本系、雙主修、輔系及跨院系學程選課","中文","70","視傳系四日二B"],["視覺傳達設計系","2190","包材結構設計","選修",2,"莊國民","四","6-8 D-406","限本系、雙主修、輔系及跨院系學程選課","中文","51","視傳系四日二B"],["視覺傳達設計系","2191","平面設計史","必修",2,"莊國民","三","2-3 D-404","限本系、雙主修、輔系及跨院系學程選課","中文","70","視傳系四日三A"],["視覺傳達設計系","2192","包裝設計","選修",2,"林慶利","一","1-3 D-406","限本系、雙主修、輔系及跨院系學程選課","中文","51","視傳系四日三A"],["視覺傳達設計系","2193","停格動畫","選修",2,"馮偉中","四","1-3 D-309","限本系、雙主修、輔系及跨院系學程選課","中文","60","視傳系四日三A"],["視覺傳達設計系","2194","動態圖像製作","選修",2,"林佳鴻","三","8-10 D-310","限本系、雙主修、輔系及跨院系學程選課","中文","70","視傳系四日三A"],["視覺傳達設計系","2195","行動裝置應用之企劃與設計","選修",2,"李其瑋","二","5-7 D-310","限本系、雙主修、輔系及跨院系學程選課","中文","70","視傳系四日三A"],["視覺傳達設計系","2196","3D渲染","選修",2,"黃俊明","一","5-7 D-310","限本系、雙主修、輔系及跨院系學程選課","中文","70","視傳系四日三A"],["視覺傳達設計系","2197","整合設計","選修",4,"莊國民、劉棠思、胡淑惠、林傑森、陳合成、陳威明","四","1-3 D-409","限本系(品牌形象及創意圖文課群)、雙主修、輔系者","中文","70","視傳系四日三A"],["視覺傳達設計系","2198","墨彩繪畫表現","選修",2,"曾培育","一","8-10 D-409","限本系、雙主修、輔系及跨院系學程選課","中文","51","視傳系四日三A"],["視覺傳達設計系","2199","3D視覺表現","選修",2,"陳合成","四","8-10 D-310","限本系、雙主修、輔系及跨院系學程選課","中文","70","視傳系四日三A"],["視覺傳達設計系","2200","動畫分鏡","選修",2,"林佳鴻","四","5-7 D-404","限本系、雙主修、輔系及跨院系學程選課","中文","70","視傳系四日三A"],["視覺傳達設計系","2201","互動育樂應用設計","選修",2,"李其瑋","三","5-7 D-310","限本系、雙主修、輔系及跨院系學程選課","中文","70","視傳系四日三A"],["視覺傳達設計系","2202","網頁互動特效設計","選修",2,"郭原昌","二","1-3 D-310","限本系、雙主修、輔系及跨院系學程選課","中文","70","視傳系四日三A"],["視覺傳達設計系","2215","永續未來敘事設計","選修",3,"劉棠思","六","2-4 D-406","115就業學程課程","中文","30","視傳系四日三A"],["視覺傳達設計系","2216","責任品牌設計與社會影響力行銷","選修",3,"劉棠思","六","6-8 D-406","115就業學程","中文","30","視傳系四日三A"],["視覺傳達設計系","2203","平面設計史","必修",2,"曾培育","一","2-3 D-404","限本系、雙主修、輔系及跨院系學程選課","中文","70","視傳系四日三B"],["視覺傳達設計系","2193","停格動畫","選修",2,"馮偉中","四","1-3 D-309","限本系、雙主修、輔系及跨院系學程選課","中文","60","視傳系四日三B"],["視覺傳達設計系","2195","行動裝置應用之企劃與設計","選修",2,"李其瑋","二","5-7 D-310","限本系、雙主修、輔系及跨院系學程選課","中文","70","視傳系四日三B"],["視覺傳達設計系","2196","3D渲染","選修",2,"黃俊明","一","5-7 D-310","限本系、雙主修、輔系及跨院系學程選課","中文","70","視傳系四日三B"],["視覺傳達設計系","2197","整合設計","選修",4,"莊國民、劉棠思、胡淑惠、林傑森、陳合成、陳威明","四","1-3 D-409","限本系(品牌形象及創意圖文課群)、雙主修、輔系者","中文","70","視傳系四日三B"],["視覺傳達設計系","2198","墨彩繪畫表現","選修",2,"曾培育","一","8-10 D-409","限本系、雙主修、輔系及跨院系學程選課","中文","51","視傳系四日三B"],["視覺傳達設計系","2199","3D視覺表現","選修",2,"陳合成","四","8-10 D-310","限本系、雙主修、輔系及跨院系學程選課","中文","70","視傳系四日三B"],["視覺傳達設計系","2200","動畫分鏡","選修",2,"林佳鴻","四","5-7 D-404","限本系、雙主修、輔系及跨院系學程選課","中文","70","視傳系四日三B"],["視覺傳達設計系","2201","互動育樂應用設計","選修",2,"李其瑋","三","5-7 D-310","限本系、雙主修、輔系及跨院系學程選課","中文","70","視傳系四日三B"],["視覺傳達設計系","2204","包裝設計","選修",2,"林慶利","二","1-3 D-406","限本系、雙主修、輔系及跨院系學程選課","中文","51","視傳系四日三B"],["視覺傳達設計系","2205","數位視訊剪輯","選修",2,"馮偉中","三","8-10 D-309","限本系、雙主修、輔系及跨院系學程選課","中文","60","視傳系四日三B"],["視覺傳達設計系","2206","動態圖像製作","選修",2,"林佳鴻","五","6-8 D-309","限本系、雙主修、輔系及跨院系學程選課","中文","60","視傳系四日三B"],["視覺傳達設計系","2207","網頁互動特效設計","選修",2,"郭原昌","三","1-3 D-310","限本系、雙主修、輔系及跨院系學程選課","中文","70","視傳系四日三B"],["視覺傳達設計系","2215","永續未來敘事設計","選修",3,"劉棠思","六","2-4 D-406","115就業學程課程","中文","30","視傳系四日三B"],["視覺傳達設計系","2216","責任品牌設計與社會影響力行銷","選修",3,"劉棠思","六","6-8 D-406","115就業學程","中文","30","視傳系四日三B"],["視覺傳達設計系","2208","專案設計與服務學習","必修",2,"林慶利、呂昭慧、劉棠思、曾培育、黃俊明、莊國民、陳崑鋒、馮偉中、林佳鴻、陳合成、郭原昌、李其瑋、邱勇標","一","","限本系、雙主修選課；上課時間與指導老師確認","中文","150","視傳系四日四A"],["視覺傳達設計系","2209","暑期實習","選修",4,"劉棠思","一","","限本系選課；已於暑假期間實習","中文","150","視傳系四日四A"],["視覺傳達設計系","2210","數位音效","選修",2,"胡育彰","四","8-10 D-309","限本系、雙主修、輔系及跨院系學程選課","中文","60","視傳系四日四A"],["視覺傳達設計系","2211","展示設計","選修",2,"邱勇標","一","2-4 D-309","限本系、雙主修、輔系及跨院系學程選課","中文","60","視傳系四日四A"],["視覺傳達設計系","2212","印刷設計與管理","選修",2,"林傑森","二","6-7,10 D-309","限本系、雙主修、輔系及跨院系學程選課","中文","60","視傳系四日四A"],["視覺傳達設計系","2213","紙藝創新","選修",2,"李慧芳","一","6-8 D-305","限本系、雙主修、輔系及跨院系學程選課","中文","51","視傳系四日四A"],["視覺傳達設計系","2208","專案設計與服務學習","必修",2,"林慶利、呂昭慧、劉棠思、曾培育、黃俊明、莊國民、陳崑鋒、馮偉中、林佳鴻、陳合成、郭原昌、李其瑋、邱勇標","一","","限本系、雙主修選課；上課時間與指導老師確認","中文","150","視傳系四日四B"],["視覺傳達設計系","2209","暑期實習","選修",4,"劉棠思","一","","限本系選課；已於暑假期間實習","中文","150","視傳系四日四B"],["視覺傳達設計系","2210","數位音效","選修",2,"胡育彰","四","8-10 D-309","限本系、雙主修、輔系及跨院系學程選課","中文","60","視傳系四日四B"],["視覺傳達設計系","2212","印刷設計與管理","選修",2,"林傑森","二","6-7,10 D-309","限本系、雙主修、輔系及跨院系學程選課","中文","60","視傳系四日四B"],["視覺傳達設計系","2213","紙藝創新","選修",2,"李慧芳","一","6-8 D-305","限本系、雙主修、輔系及跨院系學程選課","中文","51","視傳系四日四B"],["視覺傳達設計系","2214","展示設計","選修",2,"邱勇標","二","2-4 D-309","限本系、雙主修、輔系及跨院系學程選課","中文","60","視傳系四日四B"],["設計學院｜院共同","2012","人工智慧設計應用實務專題","選修",3,"李皇良、邱勇標","一","5-7 D-308","本院跨院系＜智慧創意設計與開發學程＞課程","中文","40","設計學院(四日)"],["設計學院｜院共同","2014","尖端虛擬實境設計","選修",3,"時暄嵐","五","6-8 D-319","本院跨院系＜智慧創意設計與開發學程＞課程","中文","30","設計學院(四日)"],["設計學院｜院共同","2090","多元立體感知設計","選修",3,"許哲瑜","二","2-4 D-315","本院跨院系＜智慧創意設計與開發學程＞課程","中文","40","設計學院(四日)"],["設計學院｜院共同","2234","設計競賽實務","選修",2,"李皇良","五","8-9 T2-306.1","技優專班課程，限114學年度入學技優生必選。","中文","40","設計學院(四日)"],["設計學院｜院共同","2248","設計概論","選修",2,"鄒佩蘅","五","6-7","技優專班課程，限115學年度入學技優生必選。","中文","40","設計學院(四日)"]];
+    const dayIndex = new Map(dayNames.map(function(day, index) { return [day, index]; }));
+    const allCourses = [];
+    const byId = new Map();
+    let activePanel = null;
+    let activeStage = "current";
+    let searchQuery = "";
+    let detailId = null;
+    let toastTimer = 0;
+    let draggingCourseId = null;
+    const courseMotionStates = new Map();
+    const courseMotionTimers = new Map();
+    const storageKey = "cyut-115-1-planner-rebuild";
+    const reportKey = "cyut-115-1-planner-reports";
+    let selectedIds = readSelected();
+
+    function readSelected() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || "[]");
+        return new Set(saved.filter(function(id) { return typeof id === "string"; }));
+      } catch (error) {
+        return new Set();
+      }
+    }
+
+    function saveSelected() {
+      localStorage.setItem(storageKey, JSON.stringify(Array.from(selectedIds)));
+    }
+
+    function escapeHtml(value) {
+      return String(value == null ? "" : value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function periodNumbers(period) {
+      const first = String(period || "").split(" ")[0];
+      return first.split(",").flatMap(function(range) {
+        const parts = range.split("-").map(Number).filter(function(number) { return Number.isFinite(number); });
+        if (parts.length === 2) {
+          const numbers = [];
+          for (let number = parts[0]; number <= parts[1]; number += 1) numbers.push(number);
+          return numbers;
+        }
+        return parts.length ? [parts[0]] : [];
+      });
+    }
+
+    function locationFromPeriod(period) {
+      const parts = String(period).split(" ");
+      return parts.length > 1 ? parts.slice(1).join(" ") : "校內教室";
+    }
+
+    function makeCourse(row, stage, index) {
+      let category = "";
+      let department = "";
+      let className = "";
+      let code;
+      let name;
+      let selection = "";
+      let credits;
+      let teacher;
+      let day;
+      let period;
+      let note;
+      let language;
+      let limit;
+      if (stage === "required") {
+        category = row[0]; code = row[1]; name = row[2]; selection = row[3]; credits = row[4]; teacher = row[5]; day = row[6]; period = row[7]; note = row[8] || ""; language = row[9] || "中文"; limit = row[10]; className = row[11] || "";
+      } else if (stage === "department") {
+        department = row[0]; code = row[1]; name = row[2]; selection = row[3]; credits = row[4]; teacher = row[5]; day = row[6]; period = row[7]; note = row[8] || ""; language = row[9] || "中文"; limit = row[10]; className = row[11] || "";
+      } else {
+        code = row[0]; name = row[1]; credits = row[2]; teacher = row[3]; day = row[4]; period = row[5]; note = row[6] || ""; language = row[7] || "中文"; limit = row[8];
+      }
+      const idPrefix = stage === "labor" ? "later" : stage;
+      const id = idPrefix + "-" + code + (stage === "department" ? "-" + index : "");
+      const restricted = /限|不得|須|初選|全英文|台語授課/.test(note);
+      const closed = stage === "current" && /不開放選課/.test(note);
+      let palette = "tone-" + ((index % 4) + 1);
+      if (stage === "labor") palette = "labor";
+      if (stage === "department") palette = "department";
+      if (stage === "required") {
+        if (category.indexOf("人文") !== -1) palette = "required-human";
+        else if (category.indexOf("社會") !== -1) palette = "required-social";
+        else if (category.indexOf("自然") !== -1) palette = "required-natural";
+        else if (category.indexOf("綜合") !== -1) palette = "required-comprehensive";
+        else if (category.indexOf("英文") !== -1) palette = "required-english";
+        else palette = "required-basic";
+      }
+      return { id: id, code: code, name: name, selection: selection, credits: credits, teacher: teacher, day: day, period: period, periods: periodNumbers(period), location: locationFromPeriod(period), note: note, language: language, limit: limit, category: category, department: department, className: className, stage: stage, restricted: restricted, closed: closed, palette: palette };
+    }
+
+    currentRows.forEach(function(row, index) {
+      const course = makeCourse(row, "current", index);
+      allCourses.push(course);
+      byId.set(course.id, course);
+    });
+    laborRows.forEach(function(row, index) {
+      const course = makeCourse([row[0], "勞作教育", 1, row[3], row[1], row[2], "第二階段開放；20 門中擇 1 門。", "中文", 200], "labor", index);
+      allCourses.push(course);
+      byId.set(course.id, course);
+    });
+    requiredRows.forEach(function(row, index) {
+      const course = makeCourse(row, "required", index);
+      allCourses.push(course);
+      byId.set(course.id, course);
+    });
+    departmentRows.forEach(function(row, index) {
+      const course = makeCourse(row, "department", index);
+      allCourses.push(course);
+      byId.set(course.id, course);
+    });
+
+    const appShell = document.getElementById("appShell");
+    const panelFrame = document.getElementById("panelFrame");
+    const panelContent = document.getElementById("panelContent");
+    const scheduleBody = document.getElementById("scheduleBody");
+    const toast = document.getElementById("toast");
+    const dragStatus = document.getElementById("dragStatus");
+
+    function selectedCourses() {
+      return allCourses.filter(function(course) { return selectedIds.has(course.id); });
+    }
+
+    function conflictCoursesFor(course) {
+      return selectedCourses().filter(function(other) {
+        return other.id !== course.id && other.day === course.day && course.periods.some(function(period) {
+          return other.periods.indexOf(period) !== -1;
+        });
+      });
+    }
+
+    function conflictNames(courses) {
+      const names = [];
+      const seen = new Set();
+      courses.forEach(function(course) {
+        const label = course.code + " " + course.name;
+        if (!seen.has(label)) {
+          seen.add(label);
+          names.push(label);
+        }
+      });
+      return names.slice(0, 3).join("、") + (names.length > 3 ? "…" : "");
+    }
+
+    function clearDragPreview() {
+      document.body.classList.remove("is-dragging");
+      scheduleBody.querySelectorAll("td[data-day]").forEach(function(cell) {
+        cell.classList.remove("drag-candidate", "drag-conflict", "drag-over-safe", "drag-over-conflict", "is-drop-target");
+      });
+      if (dragStatus) {
+        dragStatus.classList.remove("is-visible", "is-conflict");
+        dragStatus.textContent = "";
+      }
+    }
+
+    function showDragPreview(course) {
+      if (!course) return;
+      const conflicts = conflictCoursesFor(course);
+      const conflictKeys = new Set();
+      conflicts.forEach(function(other) {
+        other.periods.forEach(function(period) { conflictKeys.add(other.day + "-" + period); });
+      });
+      const targetKeys = new Set(course.periods.map(function(period) { return course.day + "-" + period; }));
+      scheduleBody.querySelectorAll("td[data-day]").forEach(function(cell) {
+        const key = cell.dataset.day + "-" + cell.dataset.period;
+        if (!targetKeys.has(key)) return;
+        cell.classList.add("drag-candidate");
+        if (conflictKeys.has(key)) cell.classList.add("drag-conflict");
+      });
+      document.body.classList.add("is-dragging");
+      if (dragStatus) {
+        const periodLabel = course.period ? String(course.period).split(" ")[0] : "待核對";
+        dragStatus.textContent = conflicts.length ? "衝堂：" + conflictNames(conflicts) : "可新增：星期" + (course.day || "—") + "・第 " + periodLabel + " 節";
+        dragStatus.classList.toggle("is-conflict", conflicts.length > 0);
+        dragStatus.classList.add("is-visible");
+      }
+    }
+
+    function markDragHover(cell, course) {
+      scheduleBody.querySelectorAll(".is-drop-target, .drag-over-safe, .drag-over-conflict").forEach(function(item) {
+        item.classList.remove("is-drop-target", "drag-over-safe", "drag-over-conflict");
+      });
+      cell.classList.add("is-drop-target");
+      const period = Number(cell.dataset.period);
+      const conflictKeys = new Set();
+      conflictCoursesFor(course).forEach(function(other) {
+        other.periods.forEach(function(otherPeriod) { conflictKeys.add(other.day + "-" + otherPeriod); });
+      });
+      if (conflictKeys.has(cell.dataset.day + "-" + period)) cell.classList.add("drag-over-conflict");
+      else if (course.day === cell.dataset.day && course.periods.indexOf(period) !== -1) cell.classList.add("drag-over-safe");
+    }
+
+    function audit() {
+      const selected = selectedCourses();
+      const cells = new Map();
+      selected.forEach(function(course) {
+        course.periods.forEach(function(period) {
+          const key = course.day + "-" + period;
+          if (!cells.has(key)) cells.set(key, []);
+          cells.get(key).push(course);
+        });
+      });
+      const conflictKeys = new Set();
+      const conflictCourseIds = new Set();
+      const conflictGroups = [];
+      cells.forEach(function(courses, key) {
+        if (courses.length > 1) {
+          conflictKeys.add(key);
+          conflictGroups.push(courses);
+          courses.forEach(function(course) { conflictCourseIds.add(course.id); });
+        }
+      });
+      const current = selected.filter(function(course) { return course.stage === "current"; });
+      const required = selected.filter(function(course) { return course.stage === "required"; });
+      const labor = selected.filter(function(course) { return course.stage === "labor"; });
+      const department = selected.filter(function(course) { return course.stage === "department"; });
+      const errors = [];
+      const warnings = [];
+      if (conflictKeys.size) {
+        const names = [];
+        const seen = new Set();
+        conflictGroups.forEach(function(courses) {
+          courses.forEach(function(course) {
+            const label = course.code + " " + course.name;
+            if (!seen.has(label)) {
+              seen.add(label);
+              names.push(label);
+            }
+          });
+        });
+        errors.push("衝堂：" + names.join("、"));
+      }
+      if (labor.length > 1) errors.push("勞作教育限 1 門：目前 " + labor.length + " 門");
+      if (current.reduce(function(total, course) { return total + course.credits; }, 0) < 3) warnings.push("校訂選修未滿 3 學分");
+      if (!labor.length) warnings.push("第二階段：勞作教育未選");
+      selected.filter(function(course) { return course.restricted; }).forEach(function(course) {
+        warnings.push(course.code + "：有選課條件");
+      });
+      selected.filter(function(course) { return course.closed; }).forEach(function(course) {
+        errors.push(course.code + "：不可選");
+      });
+      return {
+        selected: selected,
+        current: current,
+        required: required,
+        labor: labor,
+        department: department,
+        errors: errors,
+        warnings: warnings,
+        conflictKeys: conflictKeys,
+        conflictCourseIds: conflictCourseIds,
+        currentCredits: current.reduce(function(total, course) { return total + course.credits; }, 0),
+        requiredCredits: required.reduce(function(total, course) { return total + course.credits; }, 0),
+        laborCredits: labor.reduce(function(total, course) { return total + course.credits; }, 0),
+        departmentCredits: department.reduce(function(total, course) { return total + course.credits; }, 0)
+      };
+    }
+
+    function renderBoard() {
+      const result = audit();
+      const rows = [];
+      for (let period = 1; period <= 10; period += 1) {
+        let cells = '<tr><td class="period">' + period + "</td>";
+        dayNames.forEach(function(day) {
+          const key = day + "-" + period;
+          const courses = result.selected.filter(function(course) {
+            return course.day === day && course.periods.indexOf(period) !== -1;
+          });
+          const items = courses.map(function(course) {
+            const isConflict = result.conflictCourseIds.has(course.id);
+            const periodText = String(course.period).split(" ")[0];
+            return '<button class="slot ' + course.palette + (isConflict ? " conflict" : "") + '" type="button" data-detail="' + course.id + '" aria-label="查看 ' + escapeHtml(course.name) + '">' +
+              "<span>" + escapeHtml(course.name.length > 11 ? course.name.slice(0, 11) + "…" : course.name) + "</span>" +
+              "<small>" + escapeHtml(course.code) + " · " + escapeHtml(periodText) + (course.location === "校內教室" ? "" : " · " + escapeHtml(course.location)) + "</small></button>";
+          }).join("");
+          cells += '<td data-day="' + day + '" data-period="' + period + '" class="' + (result.conflictKeys.has(key) ? "has-conflict" : "") + '">' + items + "</td>";
+        });
+        rows.push(cells + "</tr>");
+      }
+      scheduleBody.innerHTML = rows.join("");
+      document.getElementById("metricCourses").textContent = result.selected.length;
+      document.getElementById("metricCredits").textContent = result.currentCredits + result.requiredCredits + result.laborCredits + result.departmentCredits;
+      document.getElementById("metricConflicts").textContent = result.conflictKeys.size;
+    }
+
+    function courseMatches(course) {
+      const query = searchQuery.trim().toLowerCase();
+      if (!query) return true;
+      return [course.code, course.name, course.teacher, course.day, course.language, course.note, course.category, course.department, course.className].join(" ").toLowerCase().indexOf(query) !== -1;
+    }
+
+    function stageLabel(course) {
+      if (course.stage === "current") return "現在可選";
+      if (course.stage === "required") return "校訂必修";
+      if (course.stage === "department") return "設計學院";
+      return "第二階段";
+    }
+
+    function coursePathLabel(course) {
+      if (course.department) return course.department + (course.className ? " · " + course.className : "");
+      if (course.category) return course.category.replace(/^校訂必修｜/, "");
+      if (course.stage === "labor") return "勞作教育 · 20 門擇 1";
+      return "校訂選修";
+    }
+
+    function courseCard(course) {
+      const selected = selectedIds.has(course.id);
+      const badge = course.closed ? '<span class="course-badge warn">不可選</span>' : course.restricted ? '<span class="course-badge warn">資格</span>' : '<span class="course-badge">' + stageLabel(course) + "</span>";
+      const action = course.closed ? '<button class="course-action inspect" type="button" data-action="detail" data-id="' + course.id + '">查看</button>' : '<button class="course-action ' + (selected ? "remove" : "") + '" type="button" data-action="toggle" data-id="' + course.id + '">' + (selected ? "移除" : "加入") + "</button>";
+      return '<article class="course-card ' + (selected ? "is-selected " : "") + (course.closed ? "is-closed" : "") + '" draggable="' + (!course.closed) + '" data-course-id="' + course.id + '">' +
+        '<div class="course-card-head"><div><div class="code">' + escapeHtml(course.code) + "</div><h3>" + escapeHtml(course.name) + '</h3></div><span class="credits">' + course.credits + " 學分</span></div>" +
+        '<div class="course-path">' + escapeHtml(coursePathLabel(course)) + "</div>" +
+        '<div class="course-line">' + escapeHtml(course.day || "待核對") + (course.period ? "・第 " + escapeHtml(String(course.period).split(" ")[0]) + " 節" : "") + (course.location === "校內教室" || !course.period ? "" : "・" + escapeHtml(course.location)) + "　" + escapeHtml(course.teacher) + "</div>" +
+        '<div class="course-card-foot">' + badge + action + "</div></article>";
+    }
+
+    function courseGroupsForStage(courses) {
+      if (activeStage === "current") return [{ key: "current", title: "校訂選修", subtitle: "", courses: courses }];
+      if (activeStage === "labor") return [{ key: "labor", title: "勞作教育", subtitle: "第二階段・20 門擇 1", courses: courses }];
+      const order = activeStage === "required" ? [
+        "校訂必修｜基礎通識",
+        "校訂必修｜核心通識｜大一英文",
+        "校訂必修｜核心通識｜大二英文",
+        "校訂必修｜核心通識｜人文領域",
+        "校訂必修｜核心通識｜社會領域",
+        "校訂必修｜核心通識｜自然科學領域",
+        "校訂必修｜核心通識｜綜合領域"
+      ] : ["景觀及都市設計系", "建築系", "工業設計系", "視覺傳達設計系", "設計學院｜院共同"];
+      const field = activeStage === "required" ? "category" : "department";
+      const groups = [];
+      const seen = new Set();
+      order.forEach(function(key) {
+        const groupCourses = courses.filter(function(course) { return course[field] === key; });
+        if (groupCourses.length) {
+          groups.push({ key: key, title: activeStage === "required" ? key.replace(/^校訂必修｜/, "") : key, subtitle: "", courses: groupCourses });
+          seen.add(key);
+        }
+      });
+      courses.forEach(function(course) {
+        if (!seen.has(course[field])) {
+          groups.push({ key: course[field] || "未分類", title: course[field] || "未分類", subtitle: "", courses: courses.filter(function(item) { return item[field] === course[field]; }) });
+          seen.add(course[field]);
+        }
+      });
+      return groups;
+    }
+
+    function renderCourseGroup(group, index) {
+      const openBySearch = Boolean(searchQuery.trim());
+      const openGroup = openBySearch || activeStage === "current" || activeStage === "labor" || (activeStage === "department" && index === 0);
+      const credits = group.courses.reduce(function(total, course) { return total + course.credits; }, 0);
+      let body = "";
+      if (activeStage === "department") {
+        const subgroups = [];
+        const subMap = new Map();
+        group.courses.forEach(function(course) {
+          const key = course.className || "未標示班別";
+          if (!subMap.has(key)) { const entry = { key: key, courses: [] }; subMap.set(key, entry); subgroups.push(entry); }
+          subMap.get(key).courses.push(course);
+        });
+        body = subgroups.map(function(subgroup, subIndex) {
+          const subOpen = openBySearch || subIndex === 0;
+          return '<details class="course-subgroup" ' + (subOpen ? "open" : "") + '><summary><span>' + escapeHtml(subgroup.key) + '</span><small>' + subgroup.courses.length + ' 門 · ' + subgroup.courses.reduce(function(total, course) { return total + course.credits; }, 0) + ' 學分</small></summary><div class="course-group-list">' + subgroup.courses.map(courseCard).join("") + "</div></details>";
+        }).join("");
+      } else {
+        body = '<div class="course-group-list">' + group.courses.map(courseCard).join("") + "</div>";
+      }
+      const subtitle = group.subtitle ? '<small>' + escapeHtml(group.subtitle) + '</small>' : "";
+      return '<details class="course-group" ' + (openGroup ? "open" : "") + '><summary><span><strong>' + escapeHtml(group.title) + '</strong>' + subtitle + '</span><em>' + group.courses.length + ' 門 · ' + credits + ' 學分</em></summary>' + body + "</details>";
+    }
+
+    function renderCourseList() {
+      const list = document.getElementById("courseList");
+      if (!list) return;
+      const courses = allCourses.filter(function(course) { return course.stage === activeStage && courseMatches(course); });
+      document.getElementById("courseResultCount").textContent = courses.length + " 門";
+      const groups = courseGroupsForStage(courses);
+       list.innerHTML = courses.length ? groups.map(renderCourseGroup).join("") : '<div class="empty-state">無結果</div>';
+      list.classList.remove("is-refreshing");
+      void list.offsetWidth;
+      list.classList.add("is-refreshing");
+      window.setTimeout(function() { list.classList.remove("is-refreshing"); }, 230);
+      const selectedList = document.getElementById("selectedMini");
+      if (selectedList) {
+        const selected = selectedCourses();
+        const selectedMiniCount = document.getElementById("selectedMiniCount");
+        if (selectedMiniCount) selectedMiniCount.textContent = selected.length ? "（" + selected.length + " 門）" : "";
+        selectedList.innerHTML = selected.length ? selected.map(function(course) {
+          return '<div class="selected-mini-row"><span><strong>' + escapeHtml(course.code) + "</strong> " + escapeHtml(course.name) + "</span><button class=\"minor-action\" type=\"button\" data-action=\"toggle\" data-id=\"" + course.id + '">移除</button></div>';
+         }).join("") : '<div class="empty-state">無課程</div>';
+      }
+    }
+
+    function libraryMarkup() {
+      const currentCount = allCourses.filter(function(course) { return course.stage === "current"; }).length;
+      const requiredCount = allCourses.filter(function(course) { return course.stage === "required"; }).length;
+      const departmentCount = allCourses.filter(function(course) { return course.stage === "department"; }).length;
+      const laborCount = allCourses.filter(function(course) { return course.stage === "labor"; }).length;
+      return '<div class="panel-head"><div><h2>課程</h2></div><button class="panel-close" type="button" data-action="close" aria-label="關閉">×</button></div>' +
+        '<div class="panel-note"><a href="https://cts.cyut.edu.tw/CTS0006" target="_blank" rel="noopener">核對 115-1 課堂一覽</a></div>' +
+        '<div class="stage-tabs" role="tablist">' +
+          '<button class="stage-tab" type="button" data-action="stage" data-stage="current" aria-selected="' + (activeStage === "current") + '"><strong>現在可選</strong><small>' + currentCount + " 門</small></button>" +
+          '<button class="stage-tab" type="button" data-action="stage" data-stage="required" aria-selected="' + (activeStage === "required") + '"><strong>校訂必修</strong><small>' + requiredCount + " 門</small></button>" +
+          '<button class="stage-tab" type="button" data-action="stage" data-stage="department" aria-selected="' + (activeStage === "department") + '"><strong>設計學院</strong><small>' + departmentCount + " 門</small></button>" +
+          '<button class="stage-tab" type="button" data-action="stage" data-stage="labor" aria-selected="' + (activeStage === "labor") + '"><strong>勞作教育</strong><small>第二階段・' + laborCount + " 門擇 1</small></button>" +
+        "</div>" +
+        '<div class="field"><label for="courseSearch">搜尋課程</label><input id="courseSearch" type="search" value="' + escapeHtml(searchQuery) + '" placeholder="課號／課名／教師"></div>' +
+        '<div class="list-meta"><span>符合 <strong id="courseResultCount">—</strong></span></div>' +
+        '<div class="course-list" id="courseList"></div>' +
+        '<div class="selected-zone"><h3>已加入課表 <span id="selectedMiniCount"></span></h3><div class="selected-mini" id="selectedMini"></div></div>';
+    }
+
+    function auditMarkup() {
+      const result = audit();
+      const messages = [];
+      result.errors.forEach(function(message) { messages.push('<div class="audit-message error">需要處理：' + escapeHtml(message) + "</div>"); });
+      result.warnings.forEach(function(message) { messages.push('<div class="audit-message warn">' + escapeHtml(message) + "</div>"); });
+      if (!result.errors.length && !result.warnings.length) messages.push('<div class="audit-message ok">無衝堂</div>');
+      if (!result.selected.length) messages.push('<div class="audit-message ok">請先加入課程</div>');
+      return '<div class="panel-head"><div><h2>檢查</h2></div><button class="panel-close" type="button" data-action="close" aria-label="關閉">×</button></div>' +
+        '<div class="audit-summary"><div class="audit-stat"><small>校訂選修</small><strong>' + result.currentCredits + " 學分</strong></div><div class=\"audit-stat\"><small>校訂必修</small><strong>" + result.requiredCredits + " 學分</strong></div><div class=\"audit-stat\"><small>設計學院</small><strong>" + result.departmentCredits + " 學分</strong></div><div class=\"audit-stat\"><small>勞作教育</small><strong>" + result.laborCredits + " 學分</strong></div><div class=\"audit-stat\"><small>已加入</small><strong>" + result.selected.length + " 門</strong></div><div class=\"audit-stat\"><small>衝堂節次</small><strong>" + result.conflictKeys.size + " 節</strong></div></div>" +
+        '<div class="audit-list">' + messages.join("") + "</div>" +
+        '<div class="audit-block"><h3>階段</h3><div class="button-row"><button class="minor-action primary" type="button" data-action="stage-and-library" data-stage="current">現在可選</button><button class="minor-action" type="button" data-action="stage-and-library" data-stage="required">校訂必修</button><button class="minor-action" type="button" data-action="stage-and-library" data-stage="department">設計學院</button><button class="minor-action" type="button" data-action="stage-and-library" data-stage="labor">勞作教育</button><button class="minor-action" type="button" data-action="export-plan">下載</button><button class="minor-action" type="button" data-action="clear-plan">清空</button></div></div>' +
+        '<div class="audit-block"><h3>回報</h3><div class="field"><label for="reportText">差異</label><textarea id="reportText" placeholder="課號／差異"></textarea></div><button class="minor-action primary" type="button" data-action="save-report">儲存</button><div class="report-status" id="reportStatus"></div></div>';
+    }
+
+    function detailMarkup(course) {
+      if (!course) return "";
+      const selected = selectedIds.has(course.id);
+      return '<div class="panel-head"><div><h2>課程</h2></div><button class="panel-close" type="button" data-action="close" aria-label="關閉">×</button></div>' +
+        '<div class="detail-card"><div class="detail-code">' + escapeHtml(course.code) + "・" + escapeHtml(stageLabel(course)) + '</div><h3>' + escapeHtml(course.name) + '</h3><dl class="detail-list">' +
+        (course.category || course.department ? "<div><dt>分類</dt><dd>" + escapeHtml(coursePathLabel(course)) + "</dd></div>" : "") +
+        "<div><dt>時間</dt><dd>" + escapeHtml(course.day || "時段待核對") + (course.period ? "・第 " + escapeHtml(String(course.period).split(" ")[0]) + " 節" : "") + "</dd></div>" +
+        "<div><dt>地點</dt><dd>" + escapeHtml(course.location) + "</dd></div>" +
+        "<div><dt>教師</dt><dd>" + escapeHtml(course.teacher) + "</dd></div>" +
+        "<div><dt>學分</dt><dd>" + course.credits + " 學分</dd></div>" +
+        "<div><dt>語言</dt><dd>" + escapeHtml(course.language) + "</dd></div>" +
+         "<div><dt>備註</dt><dd>" + escapeHtml(course.note || "—") + "</dd></div></dl>" +
+         '<div class="detail-actions"><button class="minor-action primary" type="button" data-action="toggle" data-id="' + course.id + '">' + (selected ? "移除" : "加入") + "</button></div></div>";
+    }
+
+    function renderPanel() {
+      const hasPanel = Boolean(activePanel);
+      appShell.classList.toggle("panel-open", hasPanel);
+      document.body.classList.toggle("panel-open", hasPanel);
+      panelFrame.classList.toggle("is-open", hasPanel);
+      panelFrame.setAttribute("aria-hidden", String(!hasPanel));
+      if (!hasPanel) {
+        panelContent.innerHTML = "";
+        return;
+      }
+      if (activePanel === "library") panelContent.innerHTML = libraryMarkup();
+      if (activePanel === "check") panelContent.innerHTML = auditMarkup();
+      if (activePanel === "detail") panelContent.innerHTML = detailMarkup(byId.get(detailId));
+      panelContent.classList.remove("is-refreshing");
+      void panelContent.offsetWidth;
+      panelContent.classList.add("is-refreshing");
+      window.setTimeout(function() { panelContent.classList.remove("is-refreshing"); }, 250);
+      if (activePanel === "library") renderCourseList();
+    }
+
+    function setPanel(panel, id) {
+      activePanel = panel;
+      detailId = id || null;
+      renderPanel();
+    }
+
+    function courseElements(id) {
+      return Array.from(document.querySelectorAll("[data-detail], .course-card[data-course-id]")).filter(function(element) {
+        return element.dataset.detail === id || element.dataset.courseId === id;
+      });
+    }
+
+    function stopCourseMotion(id) {
+      const timer = courseMotionTimers.get(id);
+      if (timer) window.clearTimeout(timer);
+      courseMotionTimers.delete(id);
+      courseElements(id).forEach(function(element) {
+        if (element.getAnimations) element.getAnimations().forEach(function(animation) { animation.cancel(); });
+        element.classList.remove("is-entering", "is-leaving", "is-snapping", "is-returning");
+      });
+    }
+
+    function animateCourseElements(id, motionClass) {
+      window.requestAnimationFrame(function() {
+        courseElements(id).forEach(function(element) {
+          element.classList.remove("is-entering", "is-leaving", "is-snapping");
+          void element.offsetWidth;
+          element.classList.add(motionClass);
+        });
+      });
+    }
+
+    function refreshAfterSelectionChange() {
+      renderBoard();
+      if (activePanel === "library") renderCourseList();
+      if (activePanel === "check" || activePanel === "detail") renderPanel();
+    }
+
+    function addCourseWithMotion(course, options) {
+      const settings = options || {};
+      stopCourseMotion(course.id);
+      courseMotionStates.set(course.id, "entering");
+      selectedIds.add(course.id);
+      saveSelected();
+      refreshAfterSelectionChange();
+      animateCourseElements(course.id, settings.motionClass || "is-entering");
+      courseMotionTimers.set(course.id, window.setTimeout(function() {
+        if (courseMotionStates.get(course.id) !== "entering") return;
+        courseMotionStates.delete(course.id);
+        courseElements(course.id).forEach(function(element) { element.classList.remove("is-entering", "is-snapping"); });
+      }, settings.motionClass === "is-snapping" ? 520 : 460));
+      showToast(settings.message || (course.code + " 已加入"));
+    }
+
+    function removeCourseWithMotion(course) {
+      stopCourseMotion(course.id);
+      courseMotionStates.set(course.id, "leaving");
+      const elements = courseElements(course.id);
+      elements.forEach(function(element) {
+        void element.offsetWidth;
+        element.classList.add("is-leaving");
+      });
+      const finish = function() {
+        if (courseMotionStates.get(course.id) !== "leaving") return;
+        selectedIds.delete(course.id);
+        saveSelected();
+        courseMotionStates.delete(course.id);
+        courseMotionTimers.delete(course.id);
+        refreshAfterSelectionChange();
+        showToast(course.code + " 已移除");
+      };
+      courseMotionTimers.set(course.id, window.setTimeout(finish, elements.length ? 320 : 0));
+    }
+
+    function toggleCourse(id, options) {
+      const course = byId.get(id);
+      if (!course) return;
+      if (course.closed) {
+        showToast("不可選");
+        return;
+      }
+      const motionState = courseMotionStates.get(id);
+      if (motionState === "leaving") {
+        addCourseWithMotion(course, options);
+        return;
+      }
+      if (selectedIds.has(id)) {
+        removeCourseWithMotion(course);
+      } else {
+        addCourseWithMotion(course, options);
+      }
+    }
+
+    function showToast(message) {
+      window.clearTimeout(toastTimer);
+      toast.textContent = message;
+      toast.classList.add("is-visible");
+      toastTimer = window.setTimeout(function() { toast.classList.remove("is-visible"); }, 2600);
+    }
+
+    function exportPlan() {
+      const payload = {
+        semester: "115-1",
+        exportedAt: new Date().toISOString(),
+        courses: selectedCourses().map(function(course) {
+          return { code: course.code, name: course.name, credits: course.credits, day: course.day, period: course.period, stage: course.stage };
+        })
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type: "application/json"});
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "cyut-115-1-course-plan.json";
+      link.click();
+      window.setTimeout(function() { URL.revokeObjectURL(link.href); }, 1000);
+      showToast("已下載目前課表。");
+    }
+
+    function saveReport() {
+      const field = document.getElementById("reportText");
+      const status = document.getElementById("reportStatus");
+      if (!field || !field.value.trim()) {
+        if (status) status.textContent = "請填寫差異";
+        return;
+      }
+      let reports = [];
+      try { reports = JSON.parse(localStorage.getItem(reportKey) || "[]"); } catch (error) { reports = []; }
+      reports.push({text: field.value.trim(), createdAt: new Date().toISOString()});
+      localStorage.setItem(reportKey, JSON.stringify(reports));
+      field.value = "";
+      if (status) status.textContent = "已儲存 " + reports.length + " 筆";
+    }
+
+    document.addEventListener("click", function(event) {
+      const button = event.target.closest("button");
+      if (!button) return;
+      if (button.dataset.panel) {
+        setPanel(button.dataset.panel);
+        return;
+      }
+      if (button.dataset.detail) {
+        setPanel("detail", button.dataset.detail);
+        return;
+      }
+      const action = button.dataset.action;
+      if (action === "close") setPanel(null);
+      if (action === "toggle") toggleCourse(button.dataset.id);
+      if (action === "detail") setPanel("detail", button.dataset.id);
+      if (action === "stage") {
+        activeStage = button.dataset.stage;
+        searchQuery = "";
+        renderPanel();
+      }
+      if (action === "stage-and-library") {
+        activeStage = button.dataset.stage;
+        searchQuery = "";
+        setPanel("library");
+      }
+      if (action === "save-report") saveReport();
+      if (action === "export-plan") exportPlan();
+      if (action === "clear-plan") {
+        const ids = Array.from(selectedIds);
+        if (!ids.length) {
+          showToast("無課程");
+          return;
+        }
+        ids.forEach(function(courseId, index) {
+          window.setTimeout(function() {
+            const course = byId.get(courseId);
+            if (course) removeCourseWithMotion(course);
+          }, index * 45);
+        });
+        showToast("清空課表");
+      }
+    });
+
+    panelContent.addEventListener("input", function(event) {
+      if (event.target.id === "courseSearch") {
+        searchQuery = event.target.value;
+        renderCourseList();
+      }
+    });
+
+    panelContent.addEventListener("dragstart", function(event) {
+      const card = event.target.closest(".course-card");
+      if (!card || card.classList.contains("is-closed")) return;
+      draggingCourseId = card.dataset.courseId;
+      event.dataTransfer.setData("text/course-id", card.dataset.courseId);
+      event.dataTransfer.effectAllowed = "copy";
+      showDragPreview(byId.get(draggingCourseId));
+    });
+
+    panelContent.addEventListener("dragend", function() {
+      draggingCourseId = null;
+      clearDragPreview();
+    });
+
+    scheduleBody.addEventListener("click", function(event) {
+      const slot = event.target.closest("[data-detail]");
+      if (slot) setPanel("detail", slot.dataset.detail);
+    });
+
+    scheduleBody.addEventListener("dragover", function(event) {
+      const cell = event.target.closest("td[data-day]");
+      const course = byId.get(draggingCourseId);
+      if (!cell || !course) return;
+      event.preventDefault();
+      markDragHover(cell, course);
+    });
+
+    scheduleBody.addEventListener("dragleave", function(event) {
+      const cell = event.target.closest("td[data-day]");
+      if (cell) cell.classList.remove("is-drop-target", "drag-over-safe", "drag-over-conflict");
+    });
+
+    scheduleBody.addEventListener("drop", function(event) {
+      const cell = event.target.closest("td[data-day]");
+      if (!cell) return;
+      event.preventDefault();
+      cell.classList.remove("is-drop-target");
+      const id = (event.dataTransfer && event.dataTransfer.getData("text/course-id")) || draggingCourseId;
+      const course = byId.get(id);
+      draggingCourseId = null;
+      if (!course) return;
+      const conflicts = conflictCoursesFor(course);
+      clearDragPreview();
+      if (!course.day || !course.periods.length) {
+        cell.classList.remove("drop-invalid");
+        void cell.offsetWidth;
+        cell.classList.add("drop-invalid");
+        window.setTimeout(function() { cell.classList.remove("drop-invalid"); }, 390);
+        const origin = panelContent.querySelector('.course-card[data-course-id="' + course.id + '"]');
+        if (origin) {
+          origin.classList.remove("is-returning");
+          void origin.offsetWidth;
+          origin.classList.add("is-returning");
+          window.setTimeout(function() { origin.classList.remove("is-returning"); }, 440);
+        }
+        showToast(course.code + " 待核對時段");
+        return;
+      }
+      if (!selectedIds.has(course.id)) {
+        toggleCourse(course.id, {
+          motionClass: "is-snapping",
+          message: conflicts.length ? course.code + " 已加入・衝堂：" + conflictNames(conflicts) : course.code + " 已吸附"
+        });
+      } else {
+        showToast(conflicts.length ? "衝堂：" + conflictNames(conflicts) : course.code + " 已在課表");
+      }
+      const targetCell = scheduleBody.querySelector('td[data-day="' + course.day + '"][data-period="' + course.periods[0] + '"]');
+      if (targetCell) {
+        targetCell.classList.remove("snap-confirm");
+        void targetCell.offsetWidth;
+        targetCell.classList.add("snap-confirm");
+        window.setTimeout(function() { targetCell.classList.remove("snap-confirm"); }, 520);
+      }
+    });
+
+    document.addEventListener("keydown", function(event) {
+      if (event.key === "Escape" && activePanel) setPanel(null);
+    });
+
+    let shineFrame = 0;
+    let shineTarget = null;
+    let shineEvent = null;
+    const shineSelector = ".topbar, .panel-frame, .glass-control, .panel-close, .toast";
+    document.addEventListener("pointermove", function(event) {
+      if (!(event.target instanceof Element)) return;
+      shineTarget = event.target.closest(shineSelector);
+      shineEvent = event;
+      if (!shineTarget || shineFrame) return;
+      shineTarget.classList.add("is-lit");
+      shineFrame = window.requestAnimationFrame(function() {
+        shineFrame = 0;
+        if (!shineTarget || !shineEvent) return;
+        const rect = shineTarget.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        const x = Math.max(0, Math.min(100, ((shineEvent.clientX - rect.left) / rect.width) * 100));
+        const y = Math.max(0, Math.min(100, ((shineEvent.clientY - rect.top) / rect.height) * 100));
+        shineTarget.style.setProperty("--shine-x", x + "%");
+        shineTarget.style.setProperty("--shine-y", y + "%");
+      });
+    }, {passive: true});
+    document.addEventListener("pointerout", function(event) {
+      if (!(event.target instanceof Element)) return;
+      const target = event.target.closest(shineSelector);
+      if (target && (!event.relatedTarget || !target.contains(event.relatedTarget))) target.classList.remove("is-lit");
+    }, {passive: true});
+
+    const landingScreen = document.getElementById("landingScreen");
+    const landingCanvas = document.getElementById("landingCanvas");
+    const enterPlanner = document.getElementById("enterPlanner");
+    const reduceLandingMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let landingIsActive = true;
+    let landingFrame = 0;
+    let landingDpr = 1;
+    let landingWidth = 0;
+    let landingHeight = 0;
+    const landingTrail = [];
+    const landingGlyphs = ["C", "Y", "U", "T", "c", "y", "u", "t"];
+
+    function sizeLandingCanvas() {
+      if (!landingCanvas) return;
+      landingDpr = Math.min(window.devicePixelRatio || 1, 2);
+      landingWidth = window.innerWidth;
+      landingHeight = window.innerHeight;
+      landingCanvas.width = Math.round(landingWidth * landingDpr);
+      landingCanvas.height = Math.round(landingHeight * landingDpr);
+      landingCanvas.style.width = landingWidth + "px";
+      landingCanvas.style.height = landingHeight + "px";
+      const context = landingCanvas.getContext("2d");
+      if (context) context.setTransform(landingDpr, 0, 0, landingDpr, 0, 0);
+    }
+
+    function addLandingGlyphs(x, y, intensity) {
+      const count = intensity ? 5 : 2 + Math.floor(Math.random() * 2);
+      for (let index = 0; index < count; index += 1) {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = intensity ? Math.random() * 30 : Math.random() * 16;
+        landingTrail.push({
+          x: x + Math.cos(angle) * distance,
+          y: y + Math.sin(angle) * distance,
+          vx: (Math.random() - .5) * (intensity ? .45 : .28),
+          vy: -.08 - Math.random() * (intensity ? .34 : .18),
+          size: 10 + Math.random() * (intensity ? 13 : 9),
+          alpha: intensity ? .76 : .56,
+          life: 1,
+          rotation: (Math.random() - .5) * .16,
+          spin: (Math.random() - .5) * .012,
+          glyph: landingGlyphs[Math.floor(Math.random() * landingGlyphs.length)]
+        });
+      }
+      if (landingTrail.length > 150) landingTrail.splice(0, landingTrail.length - 150);
+    }
+
+    function paintLandingTrail() {
+      if (!landingIsActive || !landingCanvas) return;
+      const context = landingCanvas.getContext("2d");
+      if (!context) return;
+      context.clearRect(0, 0, landingWidth, landingHeight);
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      landingTrail.forEach(function(point, index) {
+        point.x += point.vx;
+        point.y += point.vy;
+        point.rotation += point.spin;
+        point.life *= .945;
+        if (point.life < .035) {
+          landingTrail.splice(index, 1);
+          return;
+        }
+        context.save();
+        context.translate(point.x, point.y);
+        context.rotate(point.rotation);
+        context.globalAlpha = point.alpha * point.life;
+        context.font = "600 " + point.size + "px system-ui, sans-serif";
+        context.fillStyle = "#5f8da2";
+        context.shadowColor = "rgba(255, 255, 255, .72)";
+        context.shadowBlur = 10;
+        context.fillText(point.glyph, 0, 0);
+        context.restore();
+      });
+      landingFrame = window.requestAnimationFrame(paintLandingTrail);
+    }
+
+    function updateLandingPointer(event) {
+      if (!landingIsActive || reduceLandingMotion || event.pointerType === "touch") return;
+      landingScreen.style.setProperty("--landing-x", event.clientX + "px");
+      landingScreen.style.setProperty("--landing-y", event.clientY + "px");
+      addLandingGlyphs(event.clientX, event.clientY, event.buttons > 0);
+    }
+
+    function leaveLanding() {
+      if (!landingIsActive) return;
+      landingIsActive = false;
+      if (landingFrame) window.cancelAnimationFrame(landingFrame);
+      landingTrail.length = 0;
+      const context = landingCanvas && landingCanvas.getContext("2d");
+      if (context) context.clearRect(0, 0, landingWidth, landingHeight);
+      enterPlanner.disabled = true;
+      landingScreen.setAttribute("aria-hidden", "true");
+      landingScreen.classList.add("is-leaving");
+      document.body.classList.remove("landing-active");
+      window.setTimeout(function() {
+        landingScreen.hidden = true;
+      }, 540);
+    }
+
+    if (landingScreen && landingCanvas && enterPlanner) {
+      sizeLandingCanvas();
+      window.addEventListener("resize", sizeLandingCanvas, {passive: true});
+      if (!reduceLandingMotion) {
+        landingScreen.addEventListener("pointermove", updateLandingPointer, {passive: true});
+        landingFrame = window.requestAnimationFrame(paintLandingTrail);
+      }
+      enterPlanner.addEventListener("click", leaveLanding);
+    }
+
+    renderBoard();
+  </script>
+</body>
+</html>
