@@ -1528,7 +1528,7 @@
 
     function renderCourseGroup(group, index) {
       const openBySearch = Boolean(searchQuery.trim());
-      const openGroup = openBySearch || activeStage === "current" || activeStage === "labor" || (activeStage === "department" && index === 0);
+      const openGroup = openBySearch || activeStage === "current" || activeStage === "labor";
       const credits = group.courses.reduce(function(total, course) { return total + course.credits; }, 0);
       let body = "";
       if (activeStage === "department") {
@@ -1540,7 +1540,7 @@
           subMap.get(key).courses.push(course);
         });
         body = subgroups.map(function(subgroup, subIndex) {
-          const subOpen = openBySearch || subIndex === 0;
+          const subOpen = openBySearch;
           return '<details class="course-subgroup" ' + (subOpen ? "open" : "") + '><summary><span>' + escapeHtml(subgroup.key) + '</span><small>' + subgroup.courses.length + ' 門 · ' + subgroup.courses.reduce(function(total, course) { return total + course.credits; }, 0) + ' 學分</small></summary><div class="course-group-list">' + subgroup.courses.map(courseCard).join("") + "</div></details>";
         }).join("");
       } else {
