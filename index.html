@@ -399,7 +399,7 @@
       height: var(--schedule-head-height);
       color: #5c737e;
       background: #f3f7f9;
-      font-size: .72rem;
+      font-size: var(--schedule-head-font-size);
       font-weight: 760;
       text-align: center;
     }
@@ -447,7 +447,7 @@
       display: block;
       width: 100%;
       min-height: var(--slot-min-height);
-      padding: 8px 8px 7px;
+      padding: var(--slot-padding);
       border: 1px solid rgba(255, 255, 255, .96);
       border-radius: 11px;
       color: #304d5b;
@@ -458,8 +458,8 @@
     }
     .slot:hover { transform: translateY(-1px) scale(1.012); box-shadow: inset 0 1px 0 #fff, 0 9px 16px rgba(67, 104, 120, .13); }
     .slot span, .slot small { display: block; }
-    .slot span { overflow: hidden; font-size: .75rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
-    .slot small { margin-top: 6px; color: rgba(48, 77, 91, .7); font-size: .64rem; line-height: 1.35; }
+    .slot span { overflow: hidden; font-size: var(--slot-title-size); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+    .slot small { margin-top: 6px; color: rgba(48, 77, 91, .7); font-size: var(--slot-meta-size); line-height: 1.35; }
     .slot.tone-1 { background: var(--aqua); color: #385d5c; }
     .slot.tone-2 { background: var(--violet); color: #5d5f7b; }
     .slot.tone-3 { background: #e7eef2; color: #496674; }
@@ -473,11 +473,11 @@
     .slot.required-basic { background: #eef3f4; color: #60777d; }
     .slot.department { background: #e4eff4; color: #506f7f; }
     .slot.conflict { background: var(--warn-bg); color: #a65e52; box-shadow: inset 0 0 0 1px rgba(182, 122, 108, .42), 0 6px 13px rgba(182, 122, 108, .11); }
-    .schedule-board.schedule-scale-1 { --schedule-row-height: 56px; --schedule-head-height: 36px; --schedule-period-width: 42px; --schedule-min-width: 700px; --schedule-font-size: .62rem; --slot-min-height: 42px; }
-    .schedule-board.schedule-scale-2 { --schedule-row-height: 66px; --schedule-head-height: 40px; --schedule-period-width: 48px; --schedule-min-width: 730px; --schedule-font-size: .67rem; --slot-min-height: 50px; }
-    .schedule-board.schedule-scale-3 { --schedule-row-height: 76px; --schedule-head-height: 43px; --schedule-period-width: 54px; --schedule-min-width: 760px; --schedule-font-size: .72rem; --slot-min-height: 58px; }
-    .schedule-board.schedule-scale-4 { --schedule-row-height: 88px; --schedule-head-height: 48px; --schedule-period-width: 58px; --schedule-min-width: 820px; --schedule-font-size: .78rem; --slot-min-height: 70px; }
-    .schedule-board.schedule-scale-5 { --schedule-row-height: 104px; --schedule-head-height: 54px; --schedule-period-width: 64px; --schedule-min-width: 900px; --schedule-font-size: .84rem; --slot-min-height: 82px; }
+    .schedule-board.schedule-scale-1 { --schedule-row-height: 52px; --schedule-head-height: 34px; --schedule-period-width: 40px; --schedule-min-width: 650px; --schedule-font-size: .60rem; --schedule-head-font-size: .64rem; --slot-min-height: 38px; --slot-padding: 6px 6px 5px; --slot-title-size: .66rem; --slot-meta-size: .56rem; }
+    .schedule-board.schedule-scale-2 { --schedule-row-height: 66px; --schedule-head-height: 40px; --schedule-period-width: 47px; --schedule-min-width: 730px; --schedule-font-size: .68rem; --schedule-head-font-size: .69rem; --slot-min-height: 49px; --slot-padding: 7px 7px 6px; --slot-title-size: .72rem; --slot-meta-size: .60rem; }
+    .schedule-board.schedule-scale-3 { --schedule-row-height: 82px; --schedule-head-height: 45px; --schedule-period-width: 54px; --schedule-min-width: 810px; --schedule-font-size: .76rem; --schedule-head-font-size: .75rem; --slot-min-height: 60px; --slot-padding: 8px 8px 7px; --slot-title-size: .80rem; --slot-meta-size: .66rem; }
+    .schedule-board.schedule-scale-4 { --schedule-row-height: 98px; --schedule-head-height: 52px; --schedule-period-width: 62px; --schedule-min-width: 900px; --schedule-font-size: .84rem; --schedule-head-font-size: .82rem; --slot-min-height: 74px; --slot-padding: 9px 9px 8px; --slot-title-size: .88rem; --slot-meta-size: .72rem; }
+    .schedule-board.schedule-scale-5 { --schedule-row-height: 118px; --schedule-head-height: 60px; --schedule-period-width: 70px; --schedule-min-width: 1020px; --schedule-font-size: .92rem; --schedule-head-font-size: .90rem; --slot-min-height: 92px; --slot-padding: 10px 10px 9px; --slot-title-size: .96rem; --slot-meta-size: .78rem; }
     .schedule-size { display: flex; align-items: center; gap: 4px; color: var(--quiet); font-size: .68rem; }
     .schedule-size-label { margin-right: 2px; }
     .schedule-size button {
@@ -947,6 +947,11 @@
       .panel-inner { padding: 21px 17px 34px; }
       .stage-tabs, .audit-summary { grid-template-columns: 1fr; }
       .glass-control { min-height: 36px; padding: 7px 10px; }
+      .schedule-board.schedule-scale-1 { --schedule-row-height: 46px; --schedule-head-height: 32px; --schedule-period-width: 34px; --schedule-min-width: 560px; --schedule-font-size: .56rem; --schedule-head-font-size: .60rem; --slot-min-height: 34px; --slot-padding: 5px 5px 4px; --slot-title-size: .60rem; --slot-meta-size: .51rem; }
+      .schedule-board.schedule-scale-2 { --schedule-row-height: 58px; --schedule-head-height: 37px; --schedule-period-width: 41px; --schedule-min-width: 640px; --schedule-font-size: .64rem; --schedule-head-font-size: .66rem; --slot-min-height: 44px; --slot-padding: 6px 6px 5px; --slot-title-size: .67rem; --slot-meta-size: .57rem; }
+      .schedule-board.schedule-scale-3 { --schedule-row-height: 72px; --schedule-head-height: 43px; --schedule-period-width: 49px; --schedule-min-width: 720px; --schedule-font-size: .72rem; --schedule-head-font-size: .74rem; --slot-min-height: 54px; --slot-padding: 7px 7px 6px; --slot-title-size: .74rem; --slot-meta-size: .62rem; }
+      .schedule-board.schedule-scale-4 { --schedule-row-height: 90px; --schedule-head-height: 50px; --schedule-period-width: 58px; --schedule-min-width: 830px; --schedule-font-size: .80rem; --schedule-head-font-size: .82rem; --slot-min-height: 70px; --slot-padding: 8px 8px 7px; --slot-title-size: .82rem; --slot-meta-size: .68rem; }
+      .schedule-board.schedule-scale-5 { --schedule-row-height: 110px; --schedule-head-height: 58px; --schedule-period-width: 68px; --schedule-min-width: 960px; --schedule-font-size: .88rem; --schedule-head-font-size: .90rem; --slot-min-height: 86px; --slot-padding: 9px 9px 8px; --slot-title-size: .90rem; --slot-meta-size: .74rem; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
