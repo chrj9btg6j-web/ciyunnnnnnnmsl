@@ -325,6 +325,13 @@
 
     .main-content { padding: 20px clamp(20px, 3.4vw, 48px) 54px; }
     .schedule-board {
+      --schedule-row-height: 76px;
+      --schedule-head-height: 43px;
+      --schedule-cell-width: 108px;
+      --schedule-period-width: 54px;
+      --schedule-min-width: 760px;
+      --schedule-font-size: .72rem;
+      --slot-min-height: 58px;
       overflow: hidden;
       border: 1px solid rgba(210, 222, 228, .94);
       border-radius: 26px;
@@ -354,6 +361,7 @@
       justify-content: flex-end;
       gap: 8px;
     }
+    .board-tools { display: flex; align-items: flex-end; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
     .metric {
       min-width: 76px;
       padding: 9px 11px;
@@ -365,30 +373,37 @@
     .metric small, .metric strong { display: block; }
     .metric small { color: var(--quiet); font-size: .66rem; }
     .metric strong { margin-top: 2px; color: var(--ink); font-size: 1.02rem; font-weight: 700; }
-    .calendar-scroll { overflow-x: auto; }
+    .calendar-scroll {
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-x: contain;
+      scrollbar-width: thin;
+      touch-action: pan-y;
+    }
     .schedule {
       width: 100%;
-      min-width: 760px;
+      min-width: var(--schedule-min-width);
       border-collapse: collapse;
       table-layout: fixed;
-      font-size: .72rem;
+      font-size: var(--schedule-font-size);
     }
     .schedule th, .schedule td {
-      height: 76px;
+      height: var(--schedule-row-height);
       padding: 6px;
       border-right: 1px solid #e1e8ec;
       border-bottom: 1px solid #e1e8ec;
       vertical-align: top;
     }
     .schedule th {
-      height: 43px;
+      height: var(--schedule-head-height);
       color: #5c737e;
       background: #f3f7f9;
       font-size: .72rem;
       font-weight: 760;
       text-align: center;
     }
-    .schedule th:first-child, .schedule td.period { width: 54px; }
+    .schedule th:first-child, .schedule td.period { width: var(--schedule-period-width); }
     .schedule td.period {
       color: var(--quiet);
       background: #f6f9fa;
@@ -431,7 +446,7 @@
     .slot {
       display: block;
       width: 100%;
-      min-height: 58px;
+      min-height: var(--slot-min-height);
       padding: 8px 8px 7px;
       border: 1px solid rgba(255, 255, 255, .96);
       border-radius: 11px;
@@ -458,6 +473,41 @@
     .slot.required-basic { background: #eef3f4; color: #60777d; }
     .slot.department { background: #e4eff4; color: #506f7f; }
     .slot.conflict { background: var(--warn-bg); color: #a65e52; box-shadow: inset 0 0 0 1px rgba(182, 122, 108, .42), 0 6px 13px rgba(182, 122, 108, .11); }
+    .schedule-board.schedule-scale-1 { --schedule-row-height: 56px; --schedule-head-height: 36px; --schedule-period-width: 42px; --schedule-min-width: 700px; --schedule-font-size: .62rem; --slot-min-height: 42px; }
+    .schedule-board.schedule-scale-2 { --schedule-row-height: 66px; --schedule-head-height: 40px; --schedule-period-width: 48px; --schedule-min-width: 730px; --schedule-font-size: .67rem; --slot-min-height: 50px; }
+    .schedule-board.schedule-scale-3 { --schedule-row-height: 76px; --schedule-head-height: 43px; --schedule-period-width: 54px; --schedule-min-width: 760px; --schedule-font-size: .72rem; --slot-min-height: 58px; }
+    .schedule-board.schedule-scale-4 { --schedule-row-height: 88px; --schedule-head-height: 48px; --schedule-period-width: 58px; --schedule-min-width: 820px; --schedule-font-size: .78rem; --slot-min-height: 70px; }
+    .schedule-board.schedule-scale-5 { --schedule-row-height: 104px; --schedule-head-height: 54px; --schedule-period-width: 64px; --schedule-min-width: 900px; --schedule-font-size: .84rem; --slot-min-height: 82px; }
+    .schedule-size { display: flex; align-items: center; gap: 4px; color: var(--quiet); font-size: .68rem; }
+    .schedule-size-label { margin-right: 2px; }
+    .schedule-size button {
+      width: 26px;
+      height: 26px;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      color: var(--muted);
+      background: #f7fafb;
+      transition: transform 140ms var(--ease), background 180ms ease, color 180ms ease, box-shadow 180ms ease;
+    }
+    .schedule-size button:hover { transform: translateY(-1px) scale(1.02); background: #fff; }
+    .schedule-size button.is-active { color: #fff; background: var(--sky-deep); border-color: rgba(63, 108, 130, .35); box-shadow: 0 5px 12px rgba(63, 108, 130, .16); }
+    .schedule-board.has-course-focus .slot:not(.focused-slot):not(.schedule-variant) { opacity: .18; filter: saturate(.58); }
+    .schedule-board.has-course-focus .slot.focused-slot { opacity: 1; filter: none; box-shadow: inset 0 0 0 2px rgba(63, 108, 130, .30), 0 8px 18px rgba(63, 108, 130, .16); }
+    .schedule-variant {
+      position: relative;
+      border-style: dashed;
+      border-color: rgba(255, 255, 255, .90);
+      color: #5f7784;
+      background: rgba(231, 240, 244, .92);
+      opacity: .66;
+      box-shadow: inset 0 0 0 1px rgba(133, 168, 181, .15), 0 4px 12px rgba(67, 104, 120, .06);
+    }
+    .schedule-board.has-course-focus .schedule-variant.is-primary-variant { opacity: .96; box-shadow: inset 0 0 0 2px rgba(63, 108, 130, .24), 0 8px 18px rgba(63, 108, 130, .14); }
+    .schedule-variant-conflict { color: #a65e52; background: rgba(236, 184, 176, .42); border-color: rgba(201, 123, 109, .42); }
+    .schedule-focus-status { min-height: 1.1em; color: #557481; font-size: .72rem; }
+    .board-foot-right { display: flex; align-items: center; justify-content: flex-end; gap: 12px; min-width: 0; }
+    .schedule-focus-clear { white-space: nowrap; }
     .slot.is-entering, .course-card.is-entering { animation: liquid-in 420ms var(--ease) both; }
     .slot.is-leaving, .course-card.is-leaving { animation: liquid-out 300ms cubic-bezier(.4, 0, .2, 1) both; }
     .slot.is-snapping { animation: liquid-snap 480ms var(--ease) both; }
@@ -830,7 +880,7 @@
       100% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0); }
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 620px) {
       .topbar { align-items: flex-start; flex-direction: column; gap: 16px; margin: 12px 16px 0; }
       .top-actions { justify-content: flex-start; }
       .data-status { margin-right: 2px; }
@@ -849,8 +899,11 @@
       .topbar { min-height: 0; margin: 10px 12px 0; padding: 20px 18px; border-radius: 24px; }
       .main-content { padding: 18px 12px 32px; }
       .board-head { align-items: flex-start; flex-direction: column; padding: 22px 18px 17px; }
+      .board-tools { width: 100%; align-items: flex-start; justify-content: flex-start; flex-direction: column; gap: 10px; }
       .board-metrics { justify-content: flex-start; }
       .board-foot { align-items: flex-start; flex-direction: column; padding: 14px 17px; }
+      .board-foot-right { width: 100%; align-items: flex-start; justify-content: flex-start; flex-wrap: wrap; }
+      .calendar-scroll { margin-right: 1px; padding-bottom: 4px; }
       .panel-inner { padding: 21px 17px 34px; }
       .stage-tabs, .audit-summary { grid-template-columns: 1fr; }
       .glass-control { min-height: 36px; padding: 7px 10px; }
@@ -888,15 +941,25 @@
       </header>
 
       <main class="main-content">
-        <section class="schedule-board" aria-label="課表">
+        <section class="schedule-board schedule-scale-3" id="scheduleBoard" aria-label="課表">
           <div class="board-head">
             <div>
               <h2>課表</h2>
             </div>
-            <div class="board-metrics" aria-live="polite">
-              <div class="metric"><small>已排課</small><strong id="metricCourses">0</strong></div>
-              <div class="metric"><small>學分</small><strong id="metricCredits">0</strong></div>
-              <div class="metric"><small>衝堂</small><strong id="metricConflicts">0</strong></div>
+            <div class="board-tools">
+              <div class="board-metrics" aria-live="polite">
+                <div class="metric"><small>已排課</small><strong id="metricCourses">0</strong></div>
+                <div class="metric"><small>學分</small><strong id="metricCredits">0</strong></div>
+                <div class="metric"><small>衝堂</small><strong id="metricConflicts">0</strong></div>
+              </div>
+              <div class="schedule-size" aria-label="課表大小">
+                <span class="schedule-size-label">大小</span>
+                <button type="button" data-schedule-scale="1" aria-label="課表大小 1">1</button>
+                <button type="button" data-schedule-scale="2" aria-label="課表大小 2">2</button>
+                <button type="button" data-schedule-scale="3" aria-label="課表大小 3">3</button>
+                <button type="button" data-schedule-scale="4" aria-label="課表大小 4">4</button>
+                <button type="button" data-schedule-scale="5" aria-label="課表大小 5">5</button>
+              </div>
             </div>
           </div>
           <div class="calendar-scroll">
@@ -911,7 +974,11 @@
             <div class="legend" aria-label="課程圖例">
               <span>現在可選</span><span class="legend-labor">第二階段</span><span class="legend-conflict">衝堂</span>
             </div>
-            <span class="drag-status" id="dragStatus" role="status" aria-live="polite"></span>
+            <div class="board-foot-right">
+              <span class="schedule-focus-status" id="scheduleFocusStatus" role="status" aria-live="polite"></span>
+              <button class="minor-action schedule-focus-clear" type="button" data-action="clear-focus" hidden>清除</button>
+              <span class="drag-status" id="dragStatus" role="status" aria-live="polite"></span>
+            </div>
           </div>
         </section>
       </main>
@@ -950,10 +1017,14 @@
     let detailId = null;
     let toastTimer = 0;
     let draggingCourseId = null;
+    let scheduleFocusId = null;
+    let scheduleScale = 3;
+    let suppressScheduleClickUntil = 0;
     const courseMotionStates = new Map();
     const courseMotionTimers = new Map();
     const storageKey = "cyut-115-1-planner-rebuild";
     const reportKey = "cyut-115-1-planner-reports";
+    const scheduleScaleKey = "cyut-115-1-schedule-scale";
     let selectedIds = readSelected();
 
     function readSelected() {
@@ -1060,8 +1131,31 @@
     const panelFrame = document.getElementById("panelFrame");
     const panelContent = document.getElementById("panelContent");
     const scheduleBody = document.getElementById("scheduleBody");
+    const scheduleBoard = document.getElementById("scheduleBoard");
+    const calendarScroll = document.querySelector(".calendar-scroll");
+    const scheduleFocusStatus = document.getElementById("scheduleFocusStatus");
+    const scheduleFocusClear = document.querySelector("[data-action=\"clear-focus\"]");
     const toast = document.getElementById("toast");
     const dragStatus = document.getElementById("dragStatus");
+
+    function readScheduleScale() {
+      const saved = Number(localStorage.getItem(scheduleScaleKey));
+      return Number.isInteger(saved) && saved >= 1 && saved <= 5 ? saved : 3;
+    }
+
+    function applyScheduleScale(nextScale) {
+      scheduleScale = Math.max(1, Math.min(5, Number(nextScale) || 3));
+      if (scheduleBoard) {
+        scheduleBoard.classList.remove("schedule-scale-1", "schedule-scale-2", "schedule-scale-3", "schedule-scale-4", "schedule-scale-5");
+        scheduleBoard.classList.add("schedule-scale-" + scheduleScale);
+      }
+      document.querySelectorAll("[data-schedule-scale]").forEach(function(button) {
+        const active = Number(button.dataset.scheduleScale) === scheduleScale;
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
+      localStorage.setItem(scheduleScaleKey, String(scheduleScale));
+    }
 
     function selectedCourses() {
       return allCourses.filter(function(course) { return selectedIds.has(course.id); });
@@ -1202,9 +1296,69 @@
       };
     }
 
+    function sameCourseFamily(course, focusCourse) {
+      return Boolean(course && focusCourse && course.stage === focusCourse.stage && course.name === focusCourse.name);
+    }
+
+    function focusedCourseVariants(focusCourse) {
+      if (!focusCourse) return [];
+      return allCourses.filter(function(course) {
+        return sameCourseFamily(course, focusCourse) && course.day && course.periods.length;
+      });
+    }
+
+    function focusedVariantGroups(focusCourse) {
+      const groups = new Map();
+      focusedCourseVariants(focusCourse).forEach(function(course) {
+        if (selectedIds.has(course.id)) return;
+        course.periods.forEach(function(period) {
+          const key = course.day + "-" + period;
+          if (!groups.has(key)) groups.set(key, []);
+          groups.get(key).push(course);
+        });
+      });
+      return groups;
+    }
+
+    function renderVariantSlot(group, focusCourse, key) {
+      if (!group || !group.length) return "";
+      const codes = Array.from(new Set(group.map(function(course) { return course.code; })));
+      const conflicts = [];
+      const conflictIds = new Set();
+      group.forEach(function(course) {
+        conflictCoursesFor(course).forEach(function(other) {
+          if (!conflictIds.has(other.id)) {
+            conflictIds.add(other.id);
+            conflicts.push(other);
+          }
+        });
+      });
+      const isPrimary = group.some(function(course) { return course.id === scheduleFocusId; });
+      const first = group[0];
+      const codeSummary = codes.slice(0, 4).join(" / ") + (codes.length > 4 ? " +" + (codes.length - 4) : "");
+      const conflictSummary = conflicts.length ? "；衝堂：" + conflictNames(conflicts) : "";
+      const periodText = String(first.period || "").split(" ")[0];
+      const className = "slot schedule-variant" + (isPrimary ? " is-primary-variant" : "") + (conflicts.length ? " schedule-variant-conflict" : "");
+      const aria = "查看 " + first.name + "；課號 " + codes.join("、") + conflictSummary;
+      return '<button class="' + className + '" type="button" data-detail="' + first.id + '" title="' + escapeHtml(aria) + '" aria-label="' + escapeHtml(aria) + '">' +
+        "<span>" + escapeHtml(first.name.length > 11 ? first.name.slice(0, 11) + "…" : first.name) + "</span>" +
+        "<small>" + escapeHtml(codeSummary) + " · " + escapeHtml(periodText) + (conflicts.length ? " · 衝堂" : "") + "</small></button>";
+    }
+
     function renderBoard() {
       const result = audit();
+      const focusCourse = byId.get(scheduleFocusId) || null;
+      const variantGroups = focusedVariantGroups(focusCourse);
+      const focusedVariants = focusedCourseVariants(focusCourse);
       const rows = [];
+      if (scheduleBoard) {
+        scheduleBoard.classList.toggle("has-course-focus", Boolean(focusCourse));
+        scheduleBoard.classList.toggle("is-mobile-distribution", Boolean(focusCourse && window.innerWidth <= 620));
+      }
+      if (scheduleFocusStatus) {
+        scheduleFocusStatus.textContent = focusCourse ? focusCourse.name + " · " + focusedVariants.length + " 個時段" : "";
+      }
+      if (scheduleFocusClear) scheduleFocusClear.hidden = !focusCourse;
       for (let period = 1; period <= 10; period += 1) {
         let cells = '<tr><td class="period">' + period + "</td>";
         dayNames.forEach(function(day) {
@@ -1214,12 +1368,19 @@
           });
           const items = courses.map(function(course) {
             const isConflict = result.conflictCourseIds.has(course.id);
+            const isFocused = Boolean(focusCourse && course.id === focusCourse.id);
+            const isRelated = sameCourseFamily(course, focusCourse) && !isFocused;
             const periodText = String(course.period).split(" ")[0];
-            return '<button class="slot ' + course.palette + (isConflict ? " conflict" : "") + '" type="button" data-detail="' + course.id + '" aria-label="查看 ' + escapeHtml(course.name) + '">' +
+            const classes = ["slot", course.palette];
+            if (isConflict) classes.push("conflict");
+            if (isFocused) classes.push("focused-slot");
+            if (isRelated) classes.push("related-slot");
+            return '<button class="' + classes.join(" ") + '" type="button" data-detail="' + course.id + '" aria-label="查看 ' + escapeHtml(course.name) + '">' +
               "<span>" + escapeHtml(course.name.length > 11 ? course.name.slice(0, 11) + "…" : course.name) + "</span>" +
               "<small>" + escapeHtml(course.code) + " · " + escapeHtml(periodText) + (course.location === "校內教室" ? "" : " · " + escapeHtml(course.location)) + "</small></button>";
           }).join("");
-          cells += '<td data-day="' + day + '" data-period="' + period + '" class="' + (result.conflictKeys.has(key) ? "has-conflict" : "") + '">' + items + "</td>";
+          const variants = renderVariantSlot(variantGroups.get(key), focusCourse, key);
+          cells += '<td data-day="' + day + '" data-period="' + period + '" class="' + (result.conflictKeys.has(key) ? "has-conflict" : "") + '">' + items + variants + "</td>";
         });
         rows.push(cells + "</tr>");
       }
@@ -1411,6 +1572,18 @@
       renderPanel();
     }
 
+    function focusCourseDistribution(course) {
+      if (!course) return;
+      scheduleFocusId = course.id;
+      if (window.innerWidth <= 620 && activePanel) setPanel(null);
+      renderBoard();
+    }
+
+    function clearCourseDistribution() {
+      scheduleFocusId = null;
+      renderBoard();
+    }
+
     function courseElements(id) {
       return Array.from(document.querySelectorAll("[data-detail], .course-card[data-course-id]")).filter(function(element) {
         return element.dataset.detail === id || element.dataset.courseId === id;
@@ -1540,6 +1713,10 @@
     document.addEventListener("click", function(event) {
       const button = event.target.closest("button");
       if (!button) return;
+      if (button.dataset.scheduleScale) {
+        applyScheduleScale(button.dataset.scheduleScale);
+        return;
+      }
       if (button.dataset.panel) {
         setPanel(button.dataset.panel);
         return;
@@ -1550,6 +1727,7 @@
       }
       const action = button.dataset.action;
       if (action === "close") setPanel(null);
+      if (action === "clear-focus") clearCourseDistribution();
       if (action === "toggle") toggleCourse(button.dataset.id);
       if (action === "detail") setPanel("detail", button.dataset.id);
       if (action === "stage") {
@@ -1587,6 +1765,12 @@
       }
     });
 
+    panelContent.addEventListener("click", function(event) {
+      const card = event.target.closest(".course-card[data-course-id]");
+      if (!card || event.target.closest("button, a, input, summary")) return;
+      focusCourseDistribution(byId.get(card.dataset.courseId));
+    });
+
     panelContent.addEventListener("dragstart", function(event) {
       const card = event.target.closest(".course-card");
       if (!card || card.classList.contains("is-closed")) return;
@@ -1602,6 +1786,7 @@
     });
 
     scheduleBody.addEventListener("click", function(event) {
+      if (Date.now() < suppressScheduleClickUntil) return;
       const slot = event.target.closest("[data-detail]");
       if (slot) setPanel("detail", slot.dataset.detail);
     });
@@ -1662,6 +1847,30 @@
       }
     });
 
+    let schedulePointerScroll = null;
+    if (calendarScroll) {
+      calendarScroll.addEventListener("pointerdown", function(event) {
+        if (event.pointerType === "mouse" && event.button !== 0) return;
+        schedulePointerScroll = { pointerId: event.pointerId, startX: event.clientX, startScrollLeft: calendarScroll.scrollLeft, moved: false };
+        if (calendarScroll.setPointerCapture) calendarScroll.setPointerCapture(event.pointerId);
+      }, {passive: true});
+      calendarScroll.addEventListener("pointermove", function(event) {
+        if (!schedulePointerScroll || schedulePointerScroll.pointerId !== event.pointerId) return;
+        const deltaX = event.clientX - schedulePointerScroll.startX;
+        if (Math.abs(deltaX) < 3) return;
+        schedulePointerScroll.moved = true;
+        calendarScroll.scrollLeft = schedulePointerScroll.startScrollLeft - deltaX;
+      }, {passive: true});
+      ["pointerup", "pointercancel"].forEach(function(type) {
+        calendarScroll.addEventListener(type, function(event) {
+          if (schedulePointerScroll && schedulePointerScroll.pointerId === event.pointerId) {
+            if (schedulePointerScroll.moved) suppressScheduleClickUntil = Date.now() + 220;
+            schedulePointerScroll = null;
+          }
+        }, {passive: true});
+      });
+    }
+
     document.addEventListener("keydown", function(event) {
       if (event.key === "Escape" && activePanel) setPanel(null);
     });
@@ -1703,7 +1912,41 @@
     let landingWidth = 0;
     let landingHeight = 0;
     const landingTrail = [];
+    const landingAmbient = [];
     const landingGlyphs = ["C", "Y", "U", "T", "c", "y", "u", "t"];
+
+    function seedLandingAmbient() {
+      if (!landingAmbient.length) {
+        for (let index = 0; index < 18; index += 1) {
+          landingAmbient.push({
+            x: Math.random() * landingWidth,
+            y: Math.random() * landingHeight,
+            vx: (Math.random() - .5) * .12,
+            vy: -.08 - Math.random() * .18,
+            size: 11 + Math.random() * 18,
+            alpha: .08 + Math.random() * .13,
+            life: .5 + Math.random() * .5,
+            phase: Math.random() * Math.PI * 2,
+            glyph: landingGlyphs[Math.floor(Math.random() * landingGlyphs.length)]
+          });
+        }
+      }
+    }
+
+    function spawnLandingAmbient() {
+      if (!landingIsActive || reduceLandingMotion || landingAmbient.length >= 28) return;
+      landingAmbient.push({
+        x: Math.random() * landingWidth,
+        y: landingHeight + 28,
+        vx: (Math.random() - .5) * .16,
+        vy: -.12 - Math.random() * .22,
+        size: 10 + Math.random() * 16,
+        alpha: .07 + Math.random() * .12,
+        life: .3 + Math.random() * .7,
+        phase: Math.random() * Math.PI * 2,
+        glyph: landingGlyphs[Math.floor(Math.random() * landingGlyphs.length)]
+      });
+    }
 
     function sizeLandingCanvas() {
       if (!landingCanvas) return;
@@ -1716,6 +1959,7 @@
       landingCanvas.style.height = landingHeight + "px";
       const context = landingCanvas.getContext("2d");
       if (context) context.setTransform(landingDpr, 0, 0, landingDpr, 0, 0);
+      seedLandingAmbient();
     }
 
     function addLandingGlyphs(x, y, intensity) {
@@ -1746,14 +1990,36 @@
       context.clearRect(0, 0, landingWidth, landingHeight);
       context.textAlign = "center";
       context.textBaseline = "middle";
-      landingTrail.forEach(function(point, index) {
+      if (Math.random() < .035) spawnLandingAmbient();
+      landingAmbient.forEach(function(point) {
+        point.x += point.vx;
+        point.y += point.vy;
+        point.phase += .012;
+        if (point.y < -38 || point.x < -42 || point.x > landingWidth + 42) {
+          point.x = Math.random() * landingWidth;
+          point.y = landingHeight + 28;
+          point.phase = Math.random() * Math.PI * 2;
+        }
+        context.save();
+        context.translate(point.x, point.y);
+        context.rotate(Math.sin(point.phase) * .08);
+        context.globalAlpha = point.alpha * (.72 + Math.sin(point.phase) * .16);
+        context.font = "600 " + point.size + "px system-ui, sans-serif";
+        context.fillStyle = "#6c98aa";
+        context.shadowColor = "rgba(255, 255, 255, .64)";
+        context.shadowBlur = 9;
+        context.fillText(point.glyph, 0, 0);
+        context.restore();
+      });
+      for (let index = landingTrail.length - 1; index >= 0; index -= 1) {
+        const point = landingTrail[index];
         point.x += point.vx;
         point.y += point.vy;
         point.rotation += point.spin;
         point.life *= .945;
         if (point.life < .035) {
           landingTrail.splice(index, 1);
-          return;
+          continue;
         }
         context.save();
         context.translate(point.x, point.y);
@@ -1765,7 +2031,7 @@
         context.shadowBlur = 10;
         context.fillText(point.glyph, 0, 0);
         context.restore();
-      });
+      }
       landingFrame = window.requestAnimationFrame(paintLandingTrail);
     }
 
@@ -1781,6 +2047,7 @@
       landingIsActive = false;
       if (landingFrame) window.cancelAnimationFrame(landingFrame);
       landingTrail.length = 0;
+      landingAmbient.length = 0;
       const context = landingCanvas && landingCanvas.getContext("2d");
       if (context) context.clearRect(0, 0, landingWidth, landingHeight);
       enterPlanner.disabled = true;
@@ -1802,6 +2069,7 @@
       enterPlanner.addEventListener("click", leaveLanding);
     }
 
+    applyScheduleScale(readScheduleScale());
     renderBoard();
   </script>
 </body>
