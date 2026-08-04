@@ -505,7 +505,30 @@
     }
     .schedule-board.has-course-focus .schedule-variant.is-primary-variant { opacity: .96; box-shadow: inset 0 0 0 2px rgba(63, 108, 130, .24), 0 8px 18px rgba(63, 108, 130, .14); }
     .schedule-variant-conflict { color: #a65e52; background: rgba(236, 184, 176, .42); border-color: rgba(201, 123, 109, .42); }
+    .schedule-focus-tools { display: grid; gap: 8px; min-width: min(100%, 520px); }
+    .schedule-focus-line { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .schedule-focus-status { min-height: 1.1em; color: #557481; font-size: .72rem; }
+    .schedule-focus-actions { display: flex; align-items: center; justify-content: flex-end; gap: 6px; flex-wrap: wrap; }
+    .schedule-focus-add { min-height: 32px; padding: 6px 12px; border-radius: 12px; font-size: .72rem; }
+    .schedule-focus-options { display: flex; gap: 6px; max-width: min(100%, 520px); overflow-x: auto; padding: 2px 2px 4px; scrollbar-width: thin; }
+    .focus-variant-option {
+      display: grid;
+      flex: 0 0 auto;
+      gap: 2px;
+      min-width: 78px;
+      padding: 7px 9px;
+      border: 1px solid rgba(219, 224, 227, .94);
+      border-radius: 11px;
+      color: #5c747f;
+      background: rgba(250, 251, 252, .88);
+      text-align: left;
+      transition: transform 140ms var(--ease), background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+    }
+    .focus-variant-option:hover { transform: translateY(-1px) scale(1.02); background: #fff; }
+    .focus-variant-option.is-current { color: #315f72; border-color: rgba(63, 108, 130, .42); background: #e8f2f5; box-shadow: inset 0 0 0 1px rgba(63, 108, 130, .12); }
+    .focus-variant-option.is-selected { box-shadow: inset 0 0 0 1px rgba(63, 108, 130, .24); }
+    .focus-variant-option strong { font-size: .72rem; }
+    .focus-variant-option span { font-size: .64rem; white-space: nowrap; }
     .board-foot-right { display: flex; align-items: center; justify-content: flex-end; gap: 12px; min-width: 0; }
     .schedule-focus-clear { white-space: nowrap; }
     .slot.is-entering, .course-card.is-entering { animation: liquid-in 420ms var(--ease) both; }
@@ -902,7 +925,11 @@
       .board-tools { width: 100%; align-items: flex-start; justify-content: flex-start; flex-direction: column; gap: 10px; }
       .board-metrics { justify-content: flex-start; }
       .board-foot { align-items: flex-start; flex-direction: column; padding: 14px 17px; }
-      .board-foot-right { width: 100%; align-items: flex-start; justify-content: flex-start; flex-wrap: wrap; }
+      .board-foot-right { width: 100%; align-items: stretch; justify-content: flex-start; flex-wrap: wrap; }
+      .schedule-focus-tools { width: 100%; min-width: 0; }
+      .schedule-focus-line { align-items: flex-start; flex-direction: column; gap: 8px; }
+      .schedule-focus-actions { justify-content: flex-start; }
+      .schedule-focus-options { max-width: 100%; width: 100%; }
       .calendar-scroll { margin-right: 1px; padding-bottom: 4px; }
       .panel-inner { padding: 21px 17px 34px; }
       .stage-tabs, .audit-summary { grid-template-columns: 1fr; }
@@ -975,8 +1002,17 @@
               <span>現在可選</span><span class="legend-labor">第二階段</span><span class="legend-conflict">衝堂</span>
             </div>
             <div class="board-foot-right">
-              <span class="schedule-focus-status" id="scheduleFocusStatus" role="status" aria-live="polite"></span>
-              <button class="minor-action schedule-focus-clear" type="button" data-action="clear-focus" hidden>清除</button>
+              <div class="schedule-focus-tools" id="scheduleFocusTools" hidden>
+                <div class="schedule-focus-line">
+                  <span class="schedule-focus-status" id="scheduleFocusStatus" role="status" aria-live="polite"></span>
+                  <div class="schedule-focus-actions">
+                    <button class="glass-control primary schedule-focus-add" id="scheduleFocusAdd" type="button" data-action="focus-add" hidden>加入課程</button>
+                    <button class="minor-action schedule-focus-browse" id="scheduleFocusBrowse" type="button" data-action="browse-courses" hidden>其他課程</button>
+                    <button class="minor-action schedule-focus-clear" type="button" data-action="clear-focus" hidden>清除</button>
+                  </div>
+                </div>
+                <div class="schedule-focus-options" id="scheduleFocusOptions" aria-label="其他時段" hidden></div>
+              </div>
               <span class="drag-status" id="dragStatus" role="status" aria-live="polite"></span>
             </div>
           </div>
@@ -1133,7 +1169,11 @@
     const scheduleBody = document.getElementById("scheduleBody");
     const scheduleBoard = document.getElementById("scheduleBoard");
     const calendarScroll = document.querySelector(".calendar-scroll");
+    const scheduleFocusTools = document.getElementById("scheduleFocusTools");
     const scheduleFocusStatus = document.getElementById("scheduleFocusStatus");
+    const scheduleFocusOptions = document.getElementById("scheduleFocusOptions");
+    const scheduleFocusAdd = document.getElementById("scheduleFocusAdd");
+    const scheduleFocusBrowse = document.getElementById("scheduleFocusBrowse");
     const scheduleFocusClear = document.querySelector("[data-action=\"clear-focus\"]");
     const toast = document.getElementById("toast");
     const dragStatus = document.getElementById("dragStatus");
@@ -1340,9 +1380,18 @@
       const periodText = String(first.period || "").split(" ")[0];
       const className = "slot schedule-variant" + (isPrimary ? " is-primary-variant" : "") + (conflicts.length ? " schedule-variant-conflict" : "");
       const aria = "查看 " + first.name + "；課號 " + codes.join("、") + conflictSummary;
-      return '<button class="' + className + '" type="button" data-detail="' + first.id + '" title="' + escapeHtml(aria) + '" aria-label="' + escapeHtml(aria) + '">' +
+      return '<button class="' + className + '" type="button" data-action="focus-variant" data-id="' + first.id + '" title="' + escapeHtml(aria) + '" aria-label="' + escapeHtml(aria) + '">' +
         "<span>" + escapeHtml(first.name.length > 11 ? first.name.slice(0, 11) + "…" : first.name) + "</span>" +
         "<small>" + escapeHtml(codeSummary) + " · " + escapeHtml(periodText) + (conflicts.length ? " · 衝堂" : "") + "</small></button>";
+    }
+
+    function renderFocusOption(course, focusCourse) {
+      const isCurrent = course.id === focusCourse.id;
+      const isSelected = selectedIds.has(course.id);
+      const periodText = String(course.period || "待核對").split(" ")[0];
+      const label = course.code + "・星期" + (course.day || "—") + "・" + periodText;
+      return '<button class="focus-variant-option' + (isCurrent ? " is-current" : "") + (isSelected ? " is-selected" : "") + '" type="button" data-action="focus-variant" data-id="' + course.id + '" aria-pressed="' + isCurrent + '" aria-label="' + escapeHtml(label) + '">' +
+        "<strong>" + escapeHtml(course.code) + "</strong><span>星期" + escapeHtml(course.day || "—") + "・" + escapeHtml(periodText) + "</span></button>";
     }
 
     function renderBoard() {
@@ -1358,7 +1407,18 @@
       if (scheduleFocusStatus) {
         scheduleFocusStatus.textContent = focusCourse ? focusCourse.name + " · " + focusedVariants.length + " 個時段" : "";
       }
+      if (scheduleFocusTools) scheduleFocusTools.hidden = !focusCourse;
+      if (scheduleFocusAdd) {
+        scheduleFocusAdd.hidden = !focusCourse || focusCourse.closed;
+        scheduleFocusAdd.textContent = focusCourse && selectedIds.has(focusCourse.id) ? "移除課程" : "加入課程";
+        scheduleFocusAdd.classList.toggle("primary", Boolean(focusCourse && !selectedIds.has(focusCourse.id)));
+      }
+      if (scheduleFocusBrowse) scheduleFocusBrowse.hidden = !focusCourse;
       if (scheduleFocusClear) scheduleFocusClear.hidden = !focusCourse;
+      if (scheduleFocusOptions) {
+        scheduleFocusOptions.hidden = !focusCourse;
+        scheduleFocusOptions.innerHTML = focusCourse ? focusedVariants.map(function(course) { return renderFocusOption(course, focusCourse); }).join("") : "";
+      }
       for (let period = 1; period <= 10; period += 1) {
         let cells = '<tr><td class="period">' + period + "</td>";
         dayNames.forEach(function(day) {
@@ -1719,6 +1779,19 @@
       }
       if (button.dataset.panel) {
         setPanel(button.dataset.panel);
+        return;
+      }
+      if (button.dataset.action === "focus-variant") {
+        focusCourseDistribution(byId.get(button.dataset.id));
+        return;
+      }
+      if (button.dataset.action === "focus-add") {
+        if (scheduleFocusId) toggleCourse(scheduleFocusId);
+        return;
+      }
+      if (button.dataset.action === "browse-courses") {
+        clearCourseDistribution();
+        setPanel("library");
         return;
       }
       if (button.dataset.detail) {
