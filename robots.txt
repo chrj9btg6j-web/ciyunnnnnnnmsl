@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://chrj9btg6j-web.github.io/ciyunnnnnnnmsl/sitemap.xml

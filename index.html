@@ -12,7 +12,33 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f4f8fb">
-  <title>CYUT 115-1｜課表規劃</title>
+  <meta name="description" content="朝陽課表規劃與朝陽選課輔助工具，整理 115-1 課程、時段與衝堂檢查，協助朝陽科技大學學生規劃課表。資料僅供參考，請以校方公告與選課系統為準。">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://chrj9btg6j-web.github.io/ciyunnnnnnnmsl/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="zh_TW">
+  <meta property="og:site_name" content="朝陽課表規劃">
+  <meta property="og:title" content="朝陽課表規劃｜朝陽選課與衝堂檢查工具">
+  <meta property="og:description" content="規劃朝陽科技大學 115-1 課表，查看課程時段並檢查衝堂。資料僅供參考，非校方官方系統。">
+  <meta property="og:url" content="https://chrj9btg6j-web.github.io/ciyunnnnnnnmsl/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="朝陽課表規劃｜朝陽選課與衝堂檢查工具">
+  <meta name="twitter:description" content="朝陽科技大學 115-1 課表規劃與衝堂檢查工具。資料僅供參考。">
+  <title>朝陽課表規劃｜朝陽選課與衝堂檢查工具｜CYUT 115-1</title>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "朝陽課表規劃",
+      "alternateName": ["朝陽選課課表工具", "CYUT 115-1 課表規劃"],
+      "url": "https://chrj9btg6j-web.github.io/ciyunnnnnnnmsl/",
+      "description": "朝陽科技大學 115-1 課表規劃、課程時段查看與衝堂檢查工具。資料僅供參考，非校方官方系統。",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "inLanguage": "zh-Hant",
+      "isAccessibleForFree": true
+    }
+  </script>
   <style>
     :root {
       --ink: #26343d;
@@ -265,6 +291,34 @@
     .landing-enter:hover { transform: translateY(-2px) scale(1.02); background: rgba(255, 255, 255, .92); box-shadow: 0 24px 58px rgba(57, 91, 107, .2), inset 0 1px 0 rgba(255, 255, 255, 1); }
     .landing-enter:active { transform: scale(.96); }
     .landing-enter:focus-visible { outline-color: rgba(220, 244, 255, .9); }
+    .landing-description {
+      max-width: 34rem;
+      margin: -4px 0 0;
+      color: rgba(70, 111, 135, .74);
+      font-size: .82rem;
+      letter-spacing: .08em;
+      line-height: 1.6;
+    }
+    .landing-disclaimer {
+      max-width: 36rem;
+      margin: -2px 0 0;
+      color: rgba(70, 111, 135, .62);
+      font-size: .68rem;
+      line-height: 1.6;
+    }
+    .site-disclaimer {
+      margin: 0 clamp(16px, 3.4vw, 48px) 24px;
+      padding: 10px 14px;
+      border-top: 1px solid rgba(198, 213, 220, .72);
+      color: var(--muted);
+      font-size: .68rem;
+      line-height: 1.6;
+      text-align: center;
+    }
+    .site-disclaimer strong {
+      margin-right: .5em;
+      color: var(--sky-deep);
+    }
     button, input, textarea { font: inherit; }
     button { cursor: pointer; }
     button:disabled { cursor: not-allowed; opacity: .52; }
@@ -1328,6 +1382,8 @@
       <div class="landing-meta" aria-hidden="true">115-1 · 課表規劃</div>
       <div class="landing-wordmark" aria-label="CYUT"><span>C</span><span>Y</span><span>U</span><span>T</span></div>
       <button class="landing-enter" id="enterPlanner" type="button">進入課表 <span aria-hidden="true">↗</span></button>
+      <p class="landing-description">朝陽課表規劃・朝陽選課・課程衝堂檢查</p>
+      <p class="landing-disclaimer">本網站提供課程規劃，資料僅供參考；非朝陽科技大學官方系統。</p>
     </div>
   </section>
   <div class="app-shell" id="appShell">
@@ -1394,6 +1450,10 @@
           </div>
         </section>
       </main>
+      <footer class="site-disclaimer" role="contentinfo">
+        <strong>免責聲明</strong>
+        <span>本網站提供課程規劃與衝堂檢查；課程資料、選課資格與開課狀態僅供參考，請以朝陽科技大學官方公告與選課系統為準。本網站非校方官方系統。</span>
+      </footer>
     </div>
 
     <aside class="panel-frame" id="panelFrame" aria-hidden="true">
