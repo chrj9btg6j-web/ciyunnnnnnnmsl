@@ -616,9 +616,13 @@
       .app-shell.panel-open .schedule td { padding: 3px 4px; }
       .app-shell.panel-open .slot { border-radius: 8px; }
       .app-shell.panel-open .slot small { margin-top: 2px; line-height: 1.15; }
-      .app-shell.panel-open .schedule-focus-tools { display: none; }
+      /* Keep the selected-course actions reachable while the side panel is open.
+         The timetable column still owns this bar, so the panel cannot cover it. */
+      .app-shell.panel-open .schedule-focus-tools { display: grid; min-width: 0; max-width: 100%; }
+      .app-shell.panel-open .board-foot-right { flex: 1 1 auto; min-width: 0; }
+      .app-shell.panel-open .schedule-focus-line { flex-wrap: wrap; }
       .app-shell.panel-open .board-foot { min-height: 32px; padding: 7px 14px; gap: 8px; font-size: .66rem; }
-  .app-shell.panel-open .board-foot-right { flex: 0 0 auto; }
+  .app-shell.panel-open .board-foot-right { flex: 1 1 auto; min-width: 0; }
   .app-shell.panel-open .drag-status { min-width: 0; }
 
   /* Keep the right course panel useful at normal desktop viewport heights.
