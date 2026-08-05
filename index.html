@@ -1784,6 +1784,12 @@
       });
     }
 
+    function focusedCourseAlternatives(focusCourse) {
+      return focusedCourseVariants(focusCourse).filter(function(course) {
+        return !selectedIds.has(course.id);
+      });
+    }
+
     function focusedVariantGroups(focusCourse) {
       const groups = new Map();
       focusedCourseVariants(focusCourse).forEach(function(course) {
@@ -1829,14 +1835,14 @@
       const periodText = String(course.period || "待核對").split(" ")[0];
       const label = course.code + "・星期" + (course.day || "—") + "・" + periodText + (conflicts.length ? "・衝堂：" + conflictNames(conflicts) : "");
       return '<button class="focus-variant-option' + (isCurrent ? " is-current" : "") + (isSelected ? " is-selected" : "") + (conflicts.length ? " is-conflict" : "") + '" type="button" data-action="focus-variant" data-id="' + course.id + '" aria-pressed="' + isCurrent + '" aria-label="' + escapeHtml(label) + '">' +
-        "<strong>" + escapeHtml(course.code) + "</strong><span>星期" + escapeHtml(course.day || "—") + "・" + escapeHtml(periodText) + (conflicts.length ? "・衝堂" : "") + "</span></button>";
+        "<strong>" + escapeHtml(course.code) + "</strong><span>星期" + escapeHtml(course.day || "—") + "・" + escapeHtml(periodText) + (conflicts.length ? "・衝堂：" + escapeHtml(conflictNames(conflicts)) : "") + "</span></button>";
     }
 
     function renderBoard() {
       const result = audit();
       const focusCourse = byId.get(scheduleFocusId) || null;
       const variantGroups = focusedVariantGroups(focusCourse);
-      const focusedVariants = focusedCourseVariants(focusCourse);
+      const focusedVariants = focusedCourseAlternatives(focusCourse);
       const rows = [];
       if (scheduleBoard) {
         scheduleBoard.classList.toggle("has-course-focus", Boolean(focusCourse));
@@ -2134,7 +2140,7 @@
       const selected = selectedIds.has(course.id);
       const conflicts = conflictCoursesFor(course);
       const periodText = course.period ? String(course.period).split(" ")[0] : "時段待核對";
-      const variants = focusedCourseVariants(course);
+      const variants = focusedCourseAlternatives(course);
       return '<div class="panel-head"><div><h2>編輯課程</h2><p>' + escapeHtml(course.name) + '</p></div><button class="panel-close" type="button" data-action="close" aria-label="關閉">×</button></div>' +
         '<div class="focus-panel-card"><div class="focus-panel-code">' + escapeHtml(course.code) + '・' + escapeHtml(stageLabel(course)) + '</div><h3>' + escapeHtml(course.name) + '</h3>' +
         '<p class="focus-panel-meta">星期' + escapeHtml(course.day || "—") + '・' + escapeHtml(periodText) + '・' + escapeHtml(course.location || "地點待核對") + '</p>' +
