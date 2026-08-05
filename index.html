@@ -2133,10 +2133,9 @@
     function auditMarkup() {
       const result = audit();
       const messages = [];
-      result.errors.forEach(function(message) { messages.push('<div class="audit-message error">需要處理：' + escapeHtml(message) + "</div>"); });
-      result.warnings.forEach(function(message) { messages.push('<div class="audit-message warn">' + escapeHtml(message) + "</div>"); });
-      if (!result.errors.length && !result.warnings.length) messages.push('<div class="audit-message ok">無衝堂</div>');
-      if (!result.selected.length) messages.push('<div class="audit-message ok">請先加入課程</div>');
+      const conflictMessages = result.errors.filter(function(message) { return message.indexOf("衝堂：") === 0; });
+      conflictMessages.forEach(function(message) { messages.push('<div class="audit-message error">需要處理：' + escapeHtml(message) + "</div>"); });
+      if (!conflictMessages.length) messages.push('<div class="audit-message ok">' + (result.selected.length ? "無衝堂" : "請先加入課程") + "</div>");
       return '<div class="panel-head"><div><h2>檢查</h2></div><button class="panel-close" type="button" data-action="close" aria-label="關閉">×</button></div>' +
         '<div class="audit-summary"><div class="audit-stat"><small>核心通識</small><strong>' + result.coreCredits + " 學分</strong></div><div class=\"audit-stat\"><small>基礎通識</small><strong>" + result.basicCredits + " 學分</strong></div><div class=\"audit-stat\"><small>設計學院</small><strong>" + result.departmentCredits + " 學分</strong></div><div class=\"audit-stat\"><small>校定選修</small><strong>" + result.freeCredits + " 學分</strong></div><div class=\"audit-stat\"><small>已加入</small><strong>" + result.selected.length + " 門</strong></div><div class=\"audit-stat\"><small>衝堂節次</small><strong>" + result.conflictKeys.size + " 節</strong></div></div>" +
         '<div class="audit-list">' + messages.join("") + "</div>" +
