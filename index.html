@@ -655,7 +655,6 @@
   .app-shell.panel-open .panel-inner { padding: 18px 18px 24px; }
   .app-shell.panel-open .panel-head { padding-bottom: 12px; }
   .app-shell.panel-open .panel-note { margin: 10px 0; padding: 9px 10px; line-height: 1.4; }
-  .app-shell.panel-open .structure-toggle { margin: 10px 0; }
   .app-shell.panel-open .stage-tabs { gap: 6px; margin: 10px 0; }
   .app-shell.panel-open .stage-tab { min-height: 52px; padding: 8px 9px; }
   .app-shell.panel-open .field { gap: 4px; margin-bottom: 9px; }
@@ -976,84 +975,6 @@
     }
     .panel-note a { color: #4b7890; font-weight: 700; text-decoration: none; }
     .panel-note a:hover { text-decoration: underline; }
-    .structure-toggle {
-      flex: none;
-      align-self: stretch;
-      min-width: 58px;
-      margin: 16px 0;
-      padding: 8px 12px;
-      border: 1px solid rgba(255, 255, 255, .66);
-      border-radius: 13px;
-      color: #4b7180;
-      background: linear-gradient(135deg, rgba(255, 255, 255, .30), rgba(224, 244, 250, .14));
-      box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .82), 0 8px 18px rgba(48, 75, 88, .08);
-      backdrop-filter: blur(24px) saturate(1.18);
-      -webkit-backdrop-filter: blur(24px) saturate(1.18);
-      font-size: .76rem;
-      font-weight: 700;
-      transition: transform 140ms var(--ease), background 180ms ease, box-shadow 180ms ease;
-    }
-    .structure-toggle:hover { transform: scale(1.02); background: linear-gradient(135deg, rgba(255, 255, 255, .42), rgba(224, 244, 250, .20)); }
-    .structure-toggle[aria-expanded="true"] { color: var(--sky-deep); background: #e9f3f7; box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .88), 0 10px 22px rgba(48, 75, 88, .10); }
-    .structure-menu {
-      position: relative;
-      display: grid;
-      gap: 9px;
-      margin: -5px 0 16px;
-      padding: 12px;
-      border: 1px solid rgba(255, 255, 255, .68);
-      border-radius: 17px;
-      background: linear-gradient(145deg, rgba(255, 255, 255, .38), rgba(220, 243, 250, .18));
-      box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .78), 0 14px 28px rgba(48, 75, 88, .09);
-      backdrop-filter: blur(28px) saturate(1.16);
-      -webkit-backdrop-filter: blur(28px) saturate(1.16);
-      animation: structure-material-in 260ms var(--ease) both;
-    }
-    .structure-menu[hidden] { display: none; }
-    .structure-root {
-      display: grid;
-      justify-items: center;
-      gap: 2px;
-      padding: 8px 10px;
-      border: 1px solid #d7e7ec;
-      border-radius: 11px;
-      color: var(--sky-deep);
-      background: rgba(248, 253, 254, .82);
-      text-align: center;
-    }
-    .structure-root strong { font-size: .78rem; }
-    .structure-root small { color: var(--muted); font-size: .66rem; }
-    .structure-map {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      padding-top: 5px;
-    }
-    .structure-item {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: center;
-      gap: 8px;
-      min-width: 0;
-      padding: 10px;
-      border: 1px solid #d7e7ec;
-      border-radius: 12px;
-      color: var(--ink);
-      background: rgba(249, 253, 254, .78);
-      text-align: left;
-      transition: transform 140ms var(--ease), border-color 180ms ease, background 180ms ease;
-    }
-    .structure-item:hover { transform: translateY(-1px) scale(1.012); border-color: #b7d3dd; background: #f3fafc; }
-    .structure-item:active { transform: scale(.975); }
-    .structure-item .structure-index { color: #7c9eaa; font-size: .62rem; font-weight: 700; }
-    .structure-item > span:nth-child(2) { display: grid; min-width: 0; gap: 2px; }
-    .structure-item strong { overflow: hidden; font-size: .76rem; text-overflow: ellipsis; white-space: nowrap; }
-    .structure-item small { color: var(--muted); font-size: .64rem; line-height: 1.35; }
-    .structure-item .structure-arrow { color: #7c9eaa; font-size: .9rem; }
-    @keyframes structure-material-in {
-      from { opacity: 0; transform: translateY(-4px) scale(.985); filter: blur(3px); }
-      to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
-    }
     .stage-tabs {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -1350,8 +1271,6 @@
       .schedule th, .schedule td { padding: 4px; }
       .slot small { margin-top: 2px; }
       .panel-inner { padding: 21px 17px 34px; }
-      .structure-map { grid-template-columns: 1fr; }
-      .structure-toggle { min-width: 52px; padding-inline: 10px; }
       .stage-tabs, .audit-summary { grid-template-columns: 1fr; }
       .glass-control { min-height: 34px; padding: 6px 9px; }
       .schedule-size { gap: 3px; font-size: .60rem; }
@@ -2142,13 +2061,7 @@
       const laborCount = allCourses.filter(function(course) { return course.stage === "labor"; }).length;
       const freeCount = currentCount + laborCount;
       return '<div class="panel-head"><div><h2>課程</h2></div><button class="panel-close" type="button" data-action="close" aria-label="關閉">×</button></div>' +
-        '<div class="panel-note-row"><div class="panel-note"><a href="https://cts.cyut.edu.tw/CTS0006" target="_blank" rel="noopener">核對 115-1 課堂一覽</a></div><button class="structure-toggle" type="button" data-action="toggle-structure" aria-expanded="false" aria-controls="structureMenu">結構</button></div>' +
-        '<div class="structure-menu" id="structureMenu" hidden aria-label="課程分類結構"><div class="structure-root"><strong>115-1 課程分類</strong><small>四大類 · 點選前往</small></div><div class="structure-map">' +
-          '<button class="structure-item" type="button" data-action="structure-stage" data-stage="core"><span class="structure-index">01</span><span><strong>核心通識</strong><small>至少 6 學分 · ' + coreCount + " 門</small></span><span class=\"structure-arrow\">↗</span></button>" +
-          '<button class="structure-item" type="button" data-action="structure-stage" data-stage="basic"><span class="structure-index">02</span><span><strong>基礎通識</strong><small>18 學分 · ' + basicCount + " 門</small></span><span class=\"structure-arrow\">↗</span></button>" +
-          '<button class="structure-item" type="button" data-action="structure-stage" data-stage="department"><span class="structure-index">03</span><span><strong>設計學院</strong><small>專業選修 · ' + departmentCount + " 門</small></span><span class=\"structure-arrow\">↗</span></button>" +
-          '<button class="structure-item" type="button" data-action="structure-stage" data-stage="free"><span class="structure-index">04</span><span><strong>校定選修</strong><small>校定自由選修 · ' + freeCount + " 門</small></span><span class=\"structure-arrow\">↗</span></button>" +
-        '</div></div>' +
+        '<div class="panel-note-row"><div class="panel-note"><a href="https://cts.cyut.edu.tw/CTS0006" target="_blank" rel="noopener">核對 115-1 課堂一覽</a></div></div>' +
         '<div class="stage-tabs" role="tablist">' +
           '<button class="stage-tab" type="button" data-action="stage" data-stage="core" aria-selected="' + (activeStage === "core") + '"><strong>核心通識</strong><small>至少 6 學分 · ' + coreCount + " 門</small></button>" +
           '<button class="stage-tab" type="button" data-action="stage" data-stage="basic" aria-selected="' + (activeStage === "basic") + '"><strong>基礎通識</strong><small>18 學分 · ' + basicCount + " 門</small></button>" +
@@ -2403,26 +2316,6 @@
         return;
       }
       const action = button.dataset.action;
-      if (action === "toggle-structure") {
-        const menu = document.getElementById("structureMenu");
-        if (menu) {
-          const willOpen = menu.hidden;
-          menu.hidden = !willOpen;
-          button.setAttribute("aria-expanded", String(willOpen));
-          if (willOpen) window.setTimeout(function() { menu.scrollIntoView({behavior: "smooth", block: "nearest"}); }, 40);
-        }
-        return;
-      }
-      if (action === "structure-stage") {
-        activeStage = button.dataset.stage;
-        searchQuery = "";
-        setPanel("library");
-        window.setTimeout(function() {
-          const list = document.getElementById("courseList");
-          if (list) list.scrollIntoView({behavior: "smooth", block: "start"});
-        }, 120);
-        return;
-      }
       if (action === "close") setPanel(null);
       if (action === "clear-focus") {
         clearCourseDistribution();
