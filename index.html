@@ -661,6 +661,71 @@
       .app-shell.panel-open .schedule-board.schedule-scale-5 { --schedule-row-height: 40px; --schedule-head-height: 28px; --slot-min-height: 33px; --slot-title-size: .72rem; --slot-meta-size: .58rem; }
     }
 
+    /* Desktop default view: keep the complete timetable inside the viewport.
+       The old compact rules only ran after the right panel opened, which left
+       rows 8–10 below the browser window on the normal home view. */
+    @media (min-width: 1024px) {
+      body:not(.landing-active) { overflow: hidden; }
+      .app-shell:not(.panel-open) {
+        height: 100vh;
+        height: 100dvh;
+        min-height: 100vh;
+        min-height: 100dvh;
+        overflow: hidden;
+      }
+      .app-shell:not(.panel-open) .content-column {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+        min-height: 0;
+        height: 100%;
+        overflow: hidden;
+      }
+      .app-shell:not(.panel-open) .main-content {
+        display: grid;
+        grid-template-rows: minmax(0, 1fr);
+        min-height: 0;
+        height: auto;
+        padding-top: 10px;
+        padding-bottom: 12px;
+        overflow: hidden;
+      }
+      .app-shell:not(.panel-open) .schedule-board {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        height: 100%;
+        min-height: 0;
+        transform: none;
+      }
+      .app-shell:not(.panel-open) .board-head {
+        align-items: center;
+        gap: 12px;
+        padding: 12px 18px 10px;
+      }
+      .app-shell:not(.panel-open) .board-head h2 { margin: 0; font-size: .92rem; }
+      .app-shell:not(.panel-open) .board-tools { align-items: center; gap: 8px; }
+      .app-shell:not(.panel-open) .board-metrics { gap: 5px; }
+      .app-shell:not(.panel-open) .metric { min-width: 58px; padding: 5px 7px; border-radius: 10px; }
+      .app-shell:not(.panel-open) .metric small { font-size: .58rem; }
+      .app-shell:not(.panel-open) .metric strong { font-size: .88rem; }
+      .app-shell:not(.panel-open) .schedule-size { gap: 3px; font-size: .62rem; }
+      .app-shell:not(.panel-open) .schedule-size button { width: 23px; height: 23px; border-radius: 7px; }
+      .app-shell:not(.panel-open) .calendar-scroll { min-height: 0; overflow: auto; }
+      .app-shell:not(.panel-open) .schedule th,
+      .app-shell:not(.panel-open) .schedule td { padding: 3px 4px; }
+      .app-shell:not(.panel-open) .slot { border-radius: 8px; }
+      .app-shell:not(.panel-open) .slot small { margin-top: 2px; line-height: 1.15; }
+      .app-shell:not(.panel-open) .board-foot { min-height: 32px; padding: 7px 14px; gap: 8px; font-size: .66rem; }
+      .app-shell:not(.panel-open) .board-foot-right { flex: 0 0 auto; }
+      .app-shell:not(.panel-open) .drag-status { min-width: 0; }
+
+      /* Scale 3 remains the default, but is now sized to show all ten periods. */
+      .app-shell:not(.panel-open) .schedule-board.schedule-scale-1 { --schedule-row-height: 34px; --schedule-head-height: 26px; --schedule-period-width: 30px; --schedule-font-size: .54rem; --schedule-head-font-size: .58rem; --slot-min-height: 27px; --slot-padding: 3px 4px 2px; --slot-title-size: .60rem; --slot-meta-size: .48rem; }
+      .app-shell:not(.panel-open) .schedule-board.schedule-scale-2 { --schedule-row-height: 40px; --schedule-head-height: 29px; --schedule-period-width: 34px; --schedule-font-size: .60rem; --schedule-head-font-size: .63rem; --slot-min-height: 32px; --slot-padding: 3px 4px 2px; --slot-title-size: .66rem; --slot-meta-size: .52rem; }
+      .app-shell:not(.panel-open) .schedule-board.schedule-scale-3 { --schedule-row-height: 48px; --schedule-head-height: 32px; --schedule-period-width: 38px; --schedule-font-size: .66rem; --schedule-head-font-size: .68rem; --slot-min-height: 38px; --slot-padding: 4px 5px 3px; --slot-title-size: .72rem; --slot-meta-size: .56rem; }
+      .app-shell:not(.panel-open) .schedule-board.schedule-scale-4 { --schedule-row-height: 56px; --schedule-head-height: 36px; --schedule-period-width: 42px; --schedule-font-size: .72rem; --schedule-head-font-size: .74rem; --slot-min-height: 45px; --slot-padding: 4px 5px 3px; --slot-title-size: .78rem; --slot-meta-size: .62rem; }
+      .app-shell:not(.panel-open) .schedule-board.schedule-scale-5 { --schedule-row-height: 66px; --schedule-head-height: 42px; --schedule-period-width: 48px; --schedule-font-size: .78rem; --schedule-head-font-size: .80rem; --slot-min-height: 54px; --slot-padding: 5px 6px 4px; --slot-title-size: .84rem; --slot-meta-size: .68rem; }
+    }
+
     .schedule-size { display: flex; align-items: center; gap: 4px; color: var(--quiet); font-size: .68rem; }
     .schedule-size-label { margin-right: 2px; }
     .schedule-size button {
