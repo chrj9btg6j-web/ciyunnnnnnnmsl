@@ -1638,7 +1638,7 @@
 
     function conflictCoursesFor(course) {
       return selectedCourses().filter(function(other) {
-        return other.id !== course.id && other.day === course.day && course.periods.some(function(period) {
+        return other.id !== course.id && other.code !== course.code && other.day === course.day && course.periods.some(function(period) {
           return other.periods.indexOf(period) !== -1;
         });
       });
@@ -1788,16 +1788,28 @@
       });
     }
 
+    function courseOptionKey(course) {
+      return [course.code, course.day, course.periods.join(",")].join("|");
+    }
+
     function focusedCourseAlternatives(focusCourse) {
-      return focusedCourseVariants(focusCourse).filter(function(course) {
-        return !selectedIds.has(course.id);
+      const variants = focusedCourseVariants(focusCourse);
+      const selectedKeys = new Set(variants.filter(function(course) {
+        return selectedIds.has(course.id);
+      }).map(courseOptionKey));
+      const seen = new Set(selectedKeys);
+      return variants.filter(function(course) {
+        if (selectedIds.has(course.id)) return false;
+        const key = courseOptionKey(course);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
       });
     }
 
     function focusedVariantGroups(focusCourse) {
       const groups = new Map();
-      focusedCourseVariants(focusCourse).forEach(function(course) {
-        if (selectedIds.has(course.id)) return;
+      focusedCourseAlternatives(focusCourse).forEach(function(course) {
         course.periods.forEach(function(period) {
           const key = course.day + "-" + period;
           if (!groups.has(key)) groups.set(key, []);
