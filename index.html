@@ -666,6 +666,18 @@
        rows 8–10 below the browser window on the normal home view. */
     @media (min-width: 1024px) {
       body:not(.landing-active) { overflow: hidden; }
+      /* Keep the closed panel out of the one-column grid.  It was invisible
+         but still occupying an implicit second grid row, collapsing the main
+         column to a few pixels and pushing the table below the viewport. */
+      .app-shell:not(.panel-open) .panel-frame {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        bottom: 16px;
+        width: min(430px, calc(100vw - 32px));
+        height: auto;
+        margin: 0;
+      }
       .app-shell:not(.panel-open) {
         height: 100vh;
         height: 100dvh;
