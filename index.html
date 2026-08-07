@@ -12,31 +12,40 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f4f8fb">
-  <meta name="description" content="朝陽課表規劃與朝陽選課輔助工具，整理 115-1 課程、時段與衝堂檢查，協助朝陽科技大學學生規劃課表。資料僅供參考，請以校方公告與選課系統為準。">
+  <meta name="description" content="朝陽科技大學選課與課表規劃工具，整理 115-1 設計學院課程、上課時段與衝堂檢查，協助學生安排朝陽課表。資料僅供參考，請以校方公告與選課系統為準。">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://chrj9btg6j-web.github.io/ciyunnnnnnnmsl/">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="zh_TW">
-  <meta property="og:site_name" content="朝陽課表規劃">
-  <meta property="og:title" content="朝陽課表規劃｜朝陽選課與衝堂檢查工具">
-  <meta property="og:description" content="規劃朝陽科技大學 115-1 課表，查看課程時段並檢查衝堂。資料僅供參考，非校方官方系統。">
+  <meta property="og:site_name" content="朝陽選課課表規劃">
+  <meta property="og:title" content="朝陽選課課表規劃｜朝陽課表與衝堂檢查工具">
+  <meta property="og:description" content="規劃朝陽科技大學 115-1 設計學院課表，查看課程時段並檢查衝堂。資料僅供參考，非校方官方系統。">
   <meta property="og:url" content="https://chrj9btg6j-web.github.io/ciyunnnnnnnmsl/">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="朝陽課表規劃｜朝陽選課與衝堂檢查工具">
-  <meta name="twitter:description" content="朝陽科技大學 115-1 課表規劃與衝堂檢查工具。資料僅供參考。">
-  <title>朝陽課表規劃｜朝陽選課與衝堂檢查工具｜CYUT 115-1</title>
+  <meta name="twitter:title" content="朝陽選課課表規劃｜朝陽課表與衝堂檢查工具">
+  <meta name="twitter:description" content="朝陽科技大學 115-1 設計學院課表規劃與衝堂檢查工具。資料僅供參考。">
+  <title>朝陽選課課表規劃｜朝陽課表與衝堂檢查工具｜CYUT 115-1</title>
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "朝陽課表規劃",
-      "alternateName": ["朝陽選課課表工具", "CYUT 115-1 課表規劃"],
+      "name": "朝陽選課課表規劃",
+      "alternateName": ["朝陽課表規劃", "朝陽選課工具", "CYUT 115-1 課表規劃"],
       "url": "https://chrj9btg6j-web.github.io/ciyunnnnnnnmsl/",
-      "description": "朝陽科技大學 115-1 課表規劃、課程時段查看與衝堂檢查工具。資料僅供參考，非校方官方系統。",
+      "description": "朝陽科技大學 115-1 設計學院課表規劃、課程時段查看與衝堂檢查工具。資料僅供參考，非校方官方系統。",
       "applicationCategory": "EducationalApplication",
       "operatingSystem": "Web Browser",
       "inLanguage": "zh-Hant",
       "isAccessibleForFree": true
+    }
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "朝陽選課課表規劃",
+      "alternateName": ["朝陽課表", "朝陽選課工具", "朝陽 115-1 設計學院課表"],
+      "url": "https://chrj9btg6j-web.github.io/ciyunnnnnnnmsl/"
     }
   </script>
   <style>
@@ -285,6 +294,8 @@
       font-size: .98rem;
       font-weight: 600;
       letter-spacing: .04em;
+      text-decoration: none;
+      cursor: pointer;
       transition: transform 140ms cubic-bezier(.34, 1.56, .64, 1), box-shadow 180ms ease, background 180ms ease;
     }
     .landing-enter span { font-size: 1.18em; line-height: 1; }
@@ -298,6 +309,14 @@
       font-size: .82rem;
       letter-spacing: .08em;
       line-height: 1.6;
+    }
+    .landing-seo-title {
+      margin: -10px 0 -8px;
+      color: rgba(70, 111, 135, .84);
+      font-size: clamp(1rem, 2vw, 1.22rem);
+      font-weight: 620;
+      letter-spacing: .14em;
+      line-height: 1.35;
     }
     .landing-disclaimer {
       max-width: 36rem;
@@ -1381,7 +1400,8 @@
     <div class="landing-center">
       <div class="landing-meta" aria-hidden="true">115-1 · 課表規劃</div>
       <div class="landing-wordmark" aria-label="CYUT"><span>C</span><span>Y</span><span>U</span><span>T</span></div>
-      <button class="landing-enter" id="enterPlanner" type="button">進入課表 <span aria-hidden="true">↗</span></button>
+      <h1 class="landing-seo-title">朝陽選課課表規劃</h1>
+      <a class="landing-enter" id="enterPlanner" href="#appShell">進入朝陽課表 <span aria-hidden="true">↗</span></a>
       <p class="landing-description">朝陽課表規劃・朝陽選課・課程衝堂檢查</p>
       <p class="landing-disclaimer">本網站提供課程規劃，資料僅供參考；非朝陽科技大學官方系統。</p>
     </div>
@@ -2720,14 +2740,16 @@
       requestLandingMatrixPaint();
     }
 
-    function leaveLanding() {
+    function leaveLanding(event) {
+      if (event) event.preventDefault();
       if (!landingIsActive) return;
       landingIsActive = false;
       if (landingFrame) window.cancelAnimationFrame(landingFrame);
       landingPaintPending = false;
       const context = landingCanvas && landingCanvas.getContext("2d");
       if (context) context.clearRect(0, 0, landingWidth, landingHeight);
-      enterPlanner.disabled = true;
+      enterPlanner.setAttribute("aria-disabled", "true");
+      enterPlanner.tabIndex = -1;
       landingScreen.setAttribute("aria-hidden", "true");
       landingScreen.classList.add("is-leaving");
       document.body.classList.remove("landing-active");
